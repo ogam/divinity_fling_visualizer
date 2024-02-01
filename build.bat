@@ -132,7 +132,7 @@ set OUTPUT_FLAG=/Fe: "!GAME_NAME!"
 set COMPILATION_FLAGS=/std:c11 /O1 /GL /favor:blend /utf-8 /validate-charset /EHsc
 set WARNING_FLAGS=/W3 /sdl
 set SUBSYSTEM_FLAGS=/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup
-set LINK_FLAGS=/link /LTCG kernel32.lib user32.lib shell32.lib winmm.lib gdi32.lib opengl32.lib
+set LINK_FLAGS=/link /LTCG kernel32.lib user32.lib shell32.lib winmm.lib gdi32.lib opengl32.lib version.lib
 set OUTPUT_DIR=builds\windows-msvc
 REM Debug changes to flags
 IF DEFINED BUILD_DEBUG (
@@ -193,7 +193,7 @@ IF NOT EXIST !OUTPUT_DIR! (
   mkdir !OUTPUT_DIR!
   pushd !OUTPUT_DIR!
   mkdir data
-  mkdir data/images
+  mkdir data\images
   popd
 )
 cd !OUTPUT_DIR!
