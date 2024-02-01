@@ -1,0 +1,297 @@
+patch_4_1
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.3905231
+	node_offsets = 0x5B01AE0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B9FBA8, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.3905231
+	node_offsets = 0x586DB00, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x590B8C8, 0x142
+	graphics = dx11
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.3905231
+	node_offsets = 0x5B13BA0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5BB2040, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.3905231
+	node_offsets = 0x587FC60, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x591DBD0, 0x142
+	graphics = dx11
+}
+hotfix_10
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.3911062
+	node_offsets = 0x5B02AC0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5BA0B88, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.3911062
+	node_offsets = 0x586DB20, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x590B8E8, 0x142
+	graphics = dx11
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.3911062
+	node_offsets = 0x5B13BC0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5BB2060, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.3911062
+	node_offsets = 0x587FC60, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x591DBF0, 0x142
+	graphics = dx11
+}
+hotfix_11
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.3956130
+	node_offsets = 0x5B02AE0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5BA0E48, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.3956130
+	node_offsets = 0x586DB60, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x590BAC8, 0x142
+	graphics = dx11
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.3956130
+	node_offsets = 0x5B13C20, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5BB1E00, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.3956130
+	node_offsets = 0x587FC60, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x591DB10, 0x142
+	graphics = dx11
+}
+hotfix_12
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4079877
+	node_offsets = 0x5A7E8C0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B1E1D8, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4079877
+	node_offsets = 0x57EF5E0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x588E6C8, 0x142
+	graphics = dx11
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4079877
+	node_offsets = 0x5A90A60, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B304E0, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4079877
+	node_offsets = 0x58017C0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x58A0BC0, 0x142
+	graphics = dx11
+}
+hotfix_13
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4145012
+	node_offsets = 0x5A7F8E0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B1F2D8, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4145012
+	node_offsets = 0x57F1640, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x58906E8, 0x142
+	graphics = dx11
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4145012
+	node_offsets = 0x5A91A80, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B31540, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4145012
+	node_offsets = 0x58037A0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x58A2B60, 0x142
+	graphics = dx11
+}
+hotfix_14
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4216792
+	node_offsets = 0x5A828E0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B222E8, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4216792
+	node_offsets = 0x57F3600, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x58927E8, 0x142
+	graphics = dx11
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4216792
+	node_offsets = 0x5A93A40, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B334E0, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4216792
+	node_offsets = 0x5804780, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x58A39E0, 0x142
+	graphics = dx11
+}
+hotfix_15
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4251417
+	node_offsets = 0x5A85900, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B25478, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4251417
+	node_offsets = 0x57F7640, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5896898, 0x142
+	graphics = dx11
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4251417
+	node_offsets = 0x5A97A80, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B375B0, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4251417
+	node_offsets = 0x5809780, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x58A8CE0, 0x142
+	graphics = dx11
+}
+hotfix_16
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4425968
+	node_offsets = 0x5A99080, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B38D08, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4425968
+	node_offsets = 0x580ADC0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x58AA268, 0x142
+	graphics = dx11
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4425968
+	node_offsets = 0x5AAA200, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5B49F10, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4425968
+	node_offsets = 0x581BF20, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x58BB4B0, 0x142
+	graphics = dx11
+}
+hotfix_17
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4494476
+	node_offsets = 0x5B04160, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5BA3D48, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4494476
+	node_offsets = 0x5B172A0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x5BB6F10, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4494476
+	node_offsets = 0x5887FE0, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x59275A0, 0x142
+	graphics = dx11
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4494476
+	graphics = dx11
+	node_offsets =  0x5875E60, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5875E60, 0x260, 0x38, 0x38, 0x10 0x5915328, 0x142
+}
