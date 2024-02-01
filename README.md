@@ -12,6 +12,6 @@ Currently only setup with MSVC, run build.bat and you should be all set.
 If it complains about not finding vcvars.bat then add your MSVC path to the list in build.bat.  
 
 ## Libraries
-Uses Minicoro (https://github.com/edubart/minicoro)
-Raylib (https://github.com/raysan5/raylib)
-Dear Imgui (https://github.com/ocornut/imgui)
+Uses Minicoro (https://github.com/edubart/minicoro)  
+Raylib (https://github.com/raysan5/raylib)  
+Dear Imgui (https://github.com/ocornut/imgui)  
