@@ -35,7 +35,9 @@ void directory_pop();
 const char* path_get_ext(const char *path);
 const char* path_get_file_name(const char *path);
 
+void create_default_textures();
 Hashmap* load_assets(Arena *arena);
+Hashmap* load_default_assets(Arena *arena);
 Aabbf calculate_max_world_region(Hashmap *world);
 
 struct ImVec2;
