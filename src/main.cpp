@@ -548,7 +548,11 @@ void init()
     {
         //  @todo:  reuse arena
         u64 file_size;
-        if (const char *file_buffer = (const char *)read_entire_file("game_addresses.txt", &file_size))
+        String path;
+        const char *current_path = directory_get();
+        string_printf(&path, "%s/game_addresses.txt", current_path);
+        
+        if (const char *file_buffer = (const char *)read_entire_file(path.str, &file_size))
         {
             s32 block_count = parse_file_get_block_count(file_buffer, file_size);
             ctx.address_version_collection.items = (AddressVersionInfo*)malloc(sizeof(AddressVersionInfo) * 128);
@@ -559,7 +563,8 @@ void init()
             free((void*)file_buffer);
         }
         
-        if (const char *file_buffer = (const char *)read_entire_file("game_signatures.txt", &file_size))
+        string_printf(&path, "%s/game_signatures.txt", current_path);
+        if (const char *file_buffer = (const char *)read_entire_file(path.str, &file_size))
         {
             s32 block_count = parse_file_get_block_count(file_buffer, file_size);
             ctx.signature_collection.items = (SignatureInfo*)malloc(sizeof(SignatureInfo) * 128);

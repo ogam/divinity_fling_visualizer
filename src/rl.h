@@ -29,6 +29,7 @@ b32 do_settings_window(VisualizerCtx *ctx);
 b32 do_about_window(VisualizerCtx *ctx);
 
 void directory_init();
+const char *directory_get();
 const char *directory_get_relative();
 void directory_push(const char *name);
 void directory_pop();

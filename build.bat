@@ -195,6 +195,8 @@ IF NOT EXIST !OUTPUT_DIR! (
   mkdir data
   mkdir data\images
   popd
+  XCOPY game_addresses.txt !OUTPUT_DIR!
+  XCOPY game_signatures.txt !OUTPUT_DIR!
 )
 cd !OUTPUT_DIR!
 
