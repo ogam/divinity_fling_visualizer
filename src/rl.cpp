@@ -1909,6 +1909,11 @@ void directory_init()
     WORK_PATH_DEPTH = 0;
 }
 
+const char *directory_get()
+{
+    return WORK_PATH.str;
+}
+
 const char *directory_get_relative()
 {
     const char *path = WORK_PATH.str;
