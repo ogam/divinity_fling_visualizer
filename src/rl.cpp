@@ -2008,6 +2008,23 @@ const char* path_get_file_name(const char *path)
     return file_name;
 }
 
+void create_default_textures()
+{
+    ASSERT(CACHED_TEXTURES);
+    
+    u32 default_buffer[4];
+    memset(default_buffer, 0, sizeof(default_buffer));
+    Aabbi default_bounds = {};
+    default_bounds.max = {1, 1};
+    
+    AppTexture default_texture = renderer_push_image((u8*)default_buffer, default_bounds);
+    ASSERT(default_texture.id);
+    AppTexture clipboard_texture = renderer_push_image((u8*)default_buffer, default_bounds);
+    ASSERT(clipboard_texture.id);
+    hashmap_set(CACHED_TEXTURES, DEFAULT_TEXTURE_NAME, (AppTexture*)&default_texture);
+    hashmap_set(CACHED_TEXTURES, CLIPBOARD_TEXTURE_NAME, (AppTexture*)&clipboard_texture);
+}
+
 Hashmap* load_assets(Arena *arena)
 {
     directory_push("data");
@@ -2192,19 +2209,7 @@ Hashmap* load_assets(Arena *arena)
     
     UnloadDirectoryFiles(file_path_list);
     
-    {
-        u32 default_buffer[4];
-        memset(default_buffer, 0, sizeof(default_buffer));
-        Aabbi default_bounds = {};
-        default_bounds.max = {1, 1};
-        
-        AppTexture default_texture = renderer_push_image((u8*)default_buffer, default_bounds);
-        ASSERT(default_texture.id);
-        AppTexture clipboard_texture = renderer_push_image((u8*)default_buffer, default_bounds);
-        ASSERT(clipboard_texture.id);
-        hashmap_set(CACHED_TEXTURES, DEFAULT_TEXTURE_NAME, (AppTexture*)&default_texture);
-        hashmap_set(CACHED_TEXTURES, CLIPBOARD_TEXTURE_NAME, (AppTexture*)&clipboard_texture);
-    }
+    create_default_textures();
     
     directory_push("images");
     FilePathList image_paths = LoadDirectoryFiles(WORK_PATH.str);
@@ -2276,6 +2281,28 @@ Hashmap* load_assets(Arena *arena)
     
     directory_pop();
     ASSERT(STRCMP(WORK_PATH.str, GetApplicationDirectory()) && WORK_PATH_DEPTH == 0);
+    
+    return world;
+}
+
+Hashmap* load_default_assets(Arena *arena)
+{
+    ASSERT(arena);
+    if (CACHED_TEXTURES)
+    {
+        for (s32 index = 0; index < CACHED_TEXTURES->count; ++index)
+        {
+            AppTexture *texture = (AppTexture*)CACHED_TEXTURES->values[index];
+            ASSERT(texture);
+            UnloadTexture(*(Texture2D*)texture);
+        }
+    }
+    
+    arena_clear(arena);
+    CACHED_TEXTURES = hashmap_make(arena, sizeof(AppTexture), 512);
+    Hashmap *world = hashmap_make(arena, sizeof(Level), 32);
+    
+    create_default_textures();
     
     return world;
 }

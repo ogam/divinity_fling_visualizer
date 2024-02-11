@@ -1352,6 +1352,12 @@ int main(void)
     init();
     load_settings();
     ctx.world = load_assets(&ctx.arena);
+    
+    if (!ctx.world)
+    {
+        ctx.world = load_default_assets(&ctx.arena);
+    }
+    
     ctx.max_world_region = calculate_max_world_region(ctx.world);
     ctx.map_texture = renderer_render_texture_make();
     
