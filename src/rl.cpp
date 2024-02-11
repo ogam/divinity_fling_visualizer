@@ -143,7 +143,7 @@ s32 imgui_get_mouse_wheel(b32 invert)
     return mouse_wheel;
 }
 
-void do_scanned_points_table(VisualizerCtx *ctx,  f32 x, f32 y, f32 width, f32 height, b32 is_filter_valid)
+void do_scanned_points_table(VisualizerCtx *ctx,  f32 x, f32 y, f32 width, f32 height)
 {
     // node points
     {
@@ -167,12 +167,9 @@ void do_scanned_points_table(VisualizerCtx *ctx,  f32 x, f32 y, f32 width, f32 h
                 V3f world_position = ctx->recorded_world_positions.points[index];
                 b32 is_selected = ctx->selected_record_index == index;
                 
-                if (is_filter_valid)
+                if (!aabbf_filtered(ctx->filter_world_region, world_position, filter_type, is_selected))
                 {
-                    if (!aabbf_filtered(ctx->filter_world_region, world_position, filter_type, is_selected))
-                    {
-                        continue;
-                    }
+                    continue;
                 }
                 
                 string_printf(&buffer, "%7.02f %7.02f %7.02f | %4d %4d", world_position.x, world_position.y, world_position.z, screen_position.x, screen_position.y);
@@ -509,7 +506,6 @@ b32 do_window(VisualizerCtx *ctx)
 
 void do_fling_window(VisualizerCtx *ctx)
 {
-    b32 is_filter_world_region_valid = aabbf_volume(ctx->filter_world_region) > 0;
     WorldFilter filter_type = ctx->filter_type;
     ImVec2 image_size = {960.0f, 540.0f};
     
@@ -658,12 +654,9 @@ void do_fling_window(VisualizerCtx *ctx)
                     continue;
                 }
                 
-                if (is_filter_world_region_valid)
+                if (!aabbf_filtered(ctx->filter_world_region, world_position, filter_type, is_selected))
                 {
-                    if (!aabbf_filtered(ctx->filter_world_region, world_position, filter_type, is_selected))
-                    {
-                        continue;
-                    }
+                    continue;
                 }
                 
                 if (is_selected)
@@ -709,7 +702,7 @@ void do_fling_window(VisualizerCtx *ctx)
                                             region_name = &interest->name;
                                             if (interest->image_file.length)
                                             {
-                                                string_printf(&texture_key, "%s", ctx->level_name.str, interest->image_file.str);
+                                                string_printf(&texture_key, "%s", interest->image_file.str);
                                                 region_texture = (AppTexture*)hashmap_get(CACHED_TEXTURES, texture_key.str);
                                                 region_aabb = interest->region;
                                             }
@@ -724,7 +717,7 @@ void do_fling_window(VisualizerCtx *ctx)
                                             object_name = &interest->name;
                                             if (interest->image_file.length)
                                             {
-                                                string_printf(&texture_key, "%s", ctx->level_name.str, interest->image_file.str);
+                                                string_printf(&texture_key, "%s", interest->image_file.str);
                                                 object_texture = (AppTexture*)hashmap_get(CACHED_TEXTURES, texture_key.str);
                                                 object_aabb = interest->region;
                                             }
@@ -756,6 +749,13 @@ void do_fling_window(VisualizerCtx *ctx)
                                 ImVec2 uv0 = {};
                                 ImVec2 uv1 = {1.0f, 1.0f};
                                 texture_get_zoom_uv(region_texture, tooltip_image_size, focus_point, &uv0, &uv1);
+                                uv0.y = 1.0f - uv0.y;
+                                uv1.y = 1.0f - uv1.y;
+                                f32 min_y = MIN(uv0.y, uv1.y);
+                                f32 max_y = MAX(uv0.y, uv1.y);
+                                uv0.y = min_y;
+                                uv1.y = max_y;
+                                
                                 ImGui::Image((ImTextureID)region_texture, tooltip_image_size, uv0, uv1);
                             }
                             if (object_name)
@@ -776,6 +776,12 @@ void do_fling_window(VisualizerCtx *ctx)
                                 ImVec2 uv0 = {};
                                 ImVec2 uv1 = {1.0f, 1.0f};
                                 texture_get_zoom_uv(object_texture, tooltip_image_size, focus_point, &uv0, &uv1);
+                                uv0.y = 1.0f - uv0.y;
+                                uv1.y = 1.0f - uv1.y;
+                                f32 min_y = MIN(uv0.y, uv1.y);
+                                f32 max_y = MAX(uv0.y, uv1.y);
+                                uv0.y = min_y;
+                                uv1.y = max_y;
                                 
                                 ImGui::Image((ImTextureID)object_texture, tooltip_image_size, uv0, uv1);
                             }
@@ -839,7 +845,7 @@ void do_fling_window(VisualizerCtx *ctx)
     
     ImVec2 table_position = {image_size.x + 15.0f, screenshot_rect_min.y};
     ImVec2 table_size = {(f32)GetScreenWidth() - table_position.x - 15.0f, 170.0f};
-    do_scanned_points_table(ctx, table_position.x, table_position.y, table_size.x, table_size.y, is_filter_world_region_valid);
+    do_scanned_points_table(ctx, table_position.x, table_position.y, table_size.x, table_size.y);
     
     ImVec2 region_text_size = ImGui::CalcTextSize("World Region Max");
     ImGui::SetNextWindowPos({table_position.x, table_position.y + table_size.y}, ImGuiCond_Always);
@@ -1344,7 +1350,7 @@ void do_map_window(VisualizerCtx *ctx)
         
         ImVec2 table_position = {level_map_window_position.x + level_map_window_size.x + window_padding.x, level_map_window_position.y};
         ImVec2 table_size = {(f32)GetScreenWidth() - table_position.x - 15.0f, 170.0f};
-        do_scanned_points_table(ctx, table_position.x, table_position.y, table_size.x, table_size.y, true);
+        do_scanned_points_table(ctx, table_position.x, table_position.y, table_size.x, table_size.y);
         
         level_details_window_size.x = (f32)GetScreenWidth() - (level_map_window_position.x + level_map_window_size.x);
         ImVec2 side_window_position = {table_position.x, table_position.y + table_size.y};
