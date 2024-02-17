@@ -1902,7 +1902,12 @@ b32 do_about_window(VisualizerCtx *ctx)
         ImGui::Text("Created by Ogam");
         if (ImGui::Button("CPRG Discord"))
         {
-            OpenURL("https://discord.gg/kQGjd32d");
+            OpenURL("https://discord.gg/ADCqdhwHxH");
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Speedrun.com"))
+        {
+            OpenURL("https://www.speedrun.com/baldurs_gate_3/");
         }
     }
     ImGui::End();

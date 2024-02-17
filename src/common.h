@@ -28,7 +28,7 @@
 //  @todo:  build.bat and increment on every build
 #define APP_VERSION_MAJOR 0
 #define APP_VERSION_MINOR 0
-#define APP_VERSION_BUILD 4
+#define APP_VERSION_BUILD 5
 
 typedef unsigned char u8;
 typedef unsigned short u16;
@@ -289,6 +289,12 @@ struct SignatureInfo
     
     Signature node_signature;
     Signature level_signature;
+    
+    // minimum supported version
+    u32 version_major;
+    u32 version_minor;
+    u32 version_build;
+    u32 version_private;
     
     // expects first index to be overwritten
     u64 node_address_offsets[32];
@@ -794,6 +800,7 @@ static inline s32 string_printf(String *str, const char *fmt, ...)
 static inline String string_from_address_offsets(u64 *offsets, s32 count)
 {
     String str;
+    memset(&str, 0, sizeof(String));
     for (s32 index = 0; index < count; ++index)
     {
         string_printf(&str, "%s 0x%X,", str.str, offsets[index]);
@@ -1180,6 +1187,21 @@ static inline s32 parse_s32(const char *start, const char *end)
     }
     
     return strtol(value.str, nullptr, 10);
+}
+
+static inline u32 parse_u32(const char *start, const char *end)
+{
+    String value;
+    value.length = (u8)(MIN((u64)(end - start), sizeof(value.str)));
+    memcpy(&value.str, start, value.length);
+    value.str[value.length] = '\0';
+    
+    if (value.str[value.length - 1] == ',')
+    {
+        value.str[--value.length] = '\0';
+    }
+    
+    return strtoul(value.str, nullptr, 10);
 }
 
 static inline void handle_point_of_interest_block(const char *block_start, const char *block_end, void* udata)
