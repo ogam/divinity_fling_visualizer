@@ -19,6 +19,12 @@ struct ProcessInfo
     u64 module_size;
     char file_name[1024];
     char version[1024];
+    
+    u32 version_major;
+    u32 version_minor;
+    u32 version_build;
+    u32 version_private;
+    
     b32 is_gog;
     b32 is_dx11;
     
@@ -292,6 +298,7 @@ b32 process_find(StringCollection *process_names)
                             s32 vv3 = (fixed_file_info->dwFileVersionLS  >> 0) & 0xFFFF;
                             
                             snprintf(process_info.version, sizeof(process_info.version), "%d.1.1.%d%d%d", vv0, vv1, vv2, vv3);
+                            sscanf(process_info.version, "%u.%u.%u.%u", &process_info.version_major, &process_info.version_minor, &process_info.version_build, &process_info.version_private);
                         }
                     }
                     
@@ -593,8 +600,24 @@ b32 process_is_dx11()
     return process_info.is_dx11;
 }
 
-const char *process_get_version()
+const char *process_get_version(u32 *version_major, u32 *version_minor, u32 *version_build, u32 *version_private)
 {
+    if (version_major)
+    {
+        *version_major = process_info.version_major;
+    }
+    if (version_minor)
+    {
+        *version_minor = process_info.version_minor;
+    }
+    if (version_build)
+    {
+        *version_build = process_info.version_build;
+    }
+    if (version_private)
+    {
+        *version_private = process_info.version_private;
+    }
     return process_info.version;
 }
 

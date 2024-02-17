@@ -437,6 +437,22 @@ void handle_signature_block(const char *block_start, const char *block_end, void
                 line_walker = util_string_skip_special_characters(line_walker);
             }
         }
+        else if (interned_type == string_table_intern("version_major"))
+        {
+            current->version_major = parse_u32(line_walker, line_walker + util_string_word_length(line_walker));
+        }
+        else if (interned_type == string_table_intern("version_minor"))
+        {
+            current->version_minor = parse_u32(line_walker, line_walker + util_string_word_length(line_walker));
+        }
+        else if (interned_type == string_table_intern("version_build"))
+        {
+            current->version_build = parse_u32(line_walker, line_walker + util_string_word_length(line_walker));
+        }
+        else if (interned_type == string_table_intern("version_private"))
+        {
+            current->version_private = parse_u32(line_walker, line_walker + util_string_word_length(line_walker));
+        }
     }
     
     b32 has_signatures = current->node_signature.byte_count && current->level_signature.byte_count;
@@ -968,9 +984,14 @@ void setup_do_screenshot(mco_coro **co)
 
 b32 scan_memory_addresses()
 {
-    b32 memory_scan_failed = false;
-    AddressCollection position_address_collection = get_game_position_address_offsets(ctx.game_type, process_get_version());
-    AddressCollection level_address_collection = get_game_level_address_offsets(ctx.game_type, process_get_version());
+    b32 memory_scan_failed = true;
+    u32 version_major;
+    u32 version_minor;
+    u32 version_build;
+    u32 version_private;
+    const char *version = process_get_version(&version_major, &version_minor, &version_build, &version_private);
+    AddressCollection position_address_collection = get_game_position_address_offsets(ctx.game_type, version);
+    AddressCollection level_address_collection = get_game_level_address_offsets(ctx.game_type, version);
     
     if (!position_address_collection.count && !level_address_collection.count)
     {
@@ -986,8 +1007,13 @@ b32 scan_memory_addresses()
                 current_signature_info->is_gog == is_process_gog &&
                 current_signature_info->additional_info == is_dx11)
             {
-                signature = current_signature_info; 
-                break;
+                if (current_signature_info->version_major <= version_major && 
+                    current_signature_info->version_minor <= version_minor && 
+                    current_signature_info->version_build <= version_build &&
+                    current_signature_info->version_private <= version_private)
+                {
+                    signature = current_signature_info; 
+                }
             }
         }
         
@@ -1004,7 +1030,7 @@ b32 scan_memory_addresses()
                 new_address_version_info->level_addresses[0] = level_address_offset;
                 new_address_version_info->node_count = signature->node_address_offset_count;
                 new_address_version_info->level_count = signature->level_address_offset_count;
-                new_address_version_info->version = string_table_intern(process_get_version());
+                new_address_version_info->version = string_table_intern(version);
                 new_address_version_info->game = signature->game;
                 new_address_version_info->is_gog = signature->is_gog;
                 new_address_version_info->additional_info = signature->additional_info;
@@ -1039,7 +1065,11 @@ b32 scan_memory_addresses()
                 
                 printf("Dumping signature to game_addresses.txt\n%s\n", output_buffer);
                 
-                if (FILE *file_handle = fopen("game_addresses.txt", "a"))
+                const char *current_path = directory_get();
+                String path;
+                string_printf(&path, "%s/game_addresses.txt", current_path);
+                
+                if (FILE *file_handle = fopen(path.str, "a"))
                 {
                     fwrite("\n", 1, 1, file_handle);
                     fwrite(output_buffer, 1, output_buffer_length, file_handle);
@@ -1049,22 +1079,22 @@ b32 scan_memory_addresses()
         }
         process_signature_scanner_end();
     }
+    if (position_address_collection.count)
+    {
+        if (process_scan_memory_ex(position_address_collection.addresses, position_address_collection.count - 1, &ctx.position_address, sizeof(u64)))
+        {
+            ctx.position_address += position_address_collection.addresses[position_address_collection.count - 1];
+            memory_scan_failed = false;
+        }
+    }
     
-    if (process_scan_memory_ex(position_address_collection.addresses, position_address_collection.count - 1, &ctx.position_address, sizeof(u64)))
+    if (level_address_collection.count)
     {
-        ctx.position_address += position_address_collection.addresses[position_address_collection.count - 1];
-    }
-    else
-    {
-        memory_scan_failed = true;
-    }
-    if (process_scan_memory_ex(level_address_collection.addresses, level_address_collection.count - 1, &ctx.level_name_address, sizeof(u64)))
-    {
-        ctx.level_name_address += level_address_collection.addresses[level_address_collection.count - 1];
-    }
-    else
-    {
-        memory_scan_failed = true;
+        if (process_scan_memory_ex(level_address_collection.addresses, level_address_collection.count - 1, &ctx.level_name_address, sizeof(u64)))
+        {
+            ctx.level_name_address += level_address_collection.addresses[level_address_collection.count - 1];
+            memory_scan_failed = false;
+        }
     }
     
     return !memory_scan_failed;
