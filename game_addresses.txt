@@ -328,3 +328,36 @@ patch 6
 	node_offsets =  0x58C0F30, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5960D20, 0x183
 }
+hotfix 18
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4788723
+	graphics = vulkan
+	node_offsets =  0x514D2E0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x530DEE0, 0x183
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4788723
+	graphics = dx11
+	node_offsets =  0x4EC0AE0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5081630, 0x183
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4788723
+	graphics = vulkan
+	node_offsets =  0x51573C0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5318110, 0x183
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4788723
+	graphics = dx11
+	node_offsets =  0x4EC9BE0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x508A880, 0x183
+}
