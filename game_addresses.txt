@@ -1,3 +1,20 @@
+hotfix 6
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.370362
+	node_offsets = 0x55CE928, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x574E9F0, 0x142
+	graphics = vulkan
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.370362
+	node_offsets = 0x5350488, 0x260, 0x38, 0x38, 0x10
+	level_offsets = 0x54D0580, 0x142
+	graphics = dx11
+}
 patch_4_1
 {
 	game = bg3
@@ -393,4 +410,103 @@ hotfix 19
 	graphics = dx11
 	node_offsets =  0x58DDF30, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x597DA00, 0x183
+}
+hotfix 20
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4854838
+	graphics = vulkan
+	node_offsets =  0x5B55050, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5BF5328, 0x183
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4854838
+	graphics = dx11
+	node_offsets =  0x58C7DD0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x59679F8, 0x183
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4854838
+	graphics = vulkan
+	node_offsets =  0x5B661B0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5C06480, 0x183
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4854838
+	graphics = dx11
+	node_offsets =  0x58D8ED0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5978A20, 0x183
+}
+hotfix 21
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4890942
+	graphics = vulkan
+	node_offsets =  0x5B63070, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5C034C8, 0x183
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4890942
+	graphics = dx11
+	node_offsets =  0x58D5DF0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5975BA8, 0x183
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4890942
+	graphics = vulkan
+	node_offsets =  0x5B741F0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5C14840, 0x183
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4890942
+	graphics = dx11
+	node_offsets =  0x5986E10, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x58E6F50, 0x183
+}
+hotfix 21_1 minor crash fix
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4900808
+	graphics = vulkan
+	node_offsets =  0x5B63070, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5C034F8, 0x183
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4900808
+	graphics = dx11
+	node_offsets =  0x58D5DF0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5975B98, 0x183
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4900808
+	graphics = vulkan
+	node_offsets =  0x5B741F0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5C14850, 0x183
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4900808
+	graphics = dx11
+	node_offsets =  0x58E7F50, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5987E20, 0x183
 }
