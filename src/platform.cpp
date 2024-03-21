@@ -297,7 +297,7 @@ b32 process_find(StringCollection *process_names)
                             s32 vv2 = (fixed_file_info->dwFileVersionLS  >> 16) & 0xFFFF;
                             s32 vv3 = (fixed_file_info->dwFileVersionLS  >> 0) & 0xFFFF;
                             
-                            snprintf(process_info.version, sizeof(process_info.version), "%d.1.1.%d%d%d", vv0, vv1, vv2, vv3);
+                            snprintf(process_info.version, sizeof(process_info.version), "%d.1.1.%02d%02d%d", vv0, vv1, vv2, vv3);
                             sscanf(process_info.version, "%u.%u.%u.%u", &process_info.version_major, &process_info.version_minor, &process_info.version_build, &process_info.version_private);
                         }
                     }

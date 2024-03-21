@@ -510,3 +510,36 @@ hotfix 21_1 minor crash fix
 	node_offsets =  0x58E7F50, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5987E20, 0x183
 }
+hotfix 22
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4905117
+	graphics = vulkan
+	node_offsets =  0x5B65050, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5C054C8, 0x183
+}
+{
+	game = bg3
+	platform = gog
+	version = 4.1.1.4905117
+	graphics = dx11
+	node_offsets =  0x58D8DB0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5978978, 0x183
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4905117
+	graphics = vulkan
+	node_offsets =  0x5B761F0, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5C16680, 0x183
+}
+{
+	game = bg3
+	platform = steam
+	version = 4.1.1.4905117
+	graphics = dx11
+	node_offsets =  0x58E8F10, 0x260, 0x38, 0x38, 0x10
+	level_offsets =  0x5988B70, 0x183
+}
