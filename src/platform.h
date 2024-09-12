@@ -54,6 +54,7 @@ Aabbi process_window_size();
 b32 process_screenshot(void**buffer, Aabbi region, b32 include_window_frame);
 b32 process_is_gog();
 b32 process_is_dx11();
+const char *process_get_window_title();
 const char *process_get_version(u32 *version_major, u32 *version_minor, u32 *version_build, u32 *version_private);
 
 ClipboardImage clipboard_get_image();

@@ -256,6 +256,24 @@
 	version_build = 1
 	version_private = 4811634
 }
+
+this has not been added to asl script as a debugging option for livesplit
+------
+level name
+
+eocapp.exe+129C08D - 4C 8B 2D 74446E01     - mov r13,[eocapp.exe+2980508]
+eocapp.exe+129C094 - 89 4C 24 38           - mov [rsp+38],ecx
+eocapp.exe+129C098 - 89 44 24 3C           - mov [rsp+3C],eax
+
+offset, 0x48, 0xC0A
+------
+node
+eocapp.exe+13EF369 - 48 8B 1D 30145F01     - mov rbx,[eocapp.exe+29E07A0]
+eocapp.exe+13EF370 - 48 8B F2              - mov rsi,rdx
+eocapp.exe+13EF373 - 48 8B 01              - mov rax,[rcx]
+
+offset, 0x18, 0x148, 0x18, 0x70, 0x30
+
 {
 	game = dos2
 	platform = steam

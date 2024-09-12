@@ -11,48 +11,19 @@
 #define INPUT_DELAY (1.0 / 30.0)
 #define YIELD_WAIT(CO, DELAY) { f64 delay = get_time() +  DELAY; while (delay > get_time()) mco_yield(CO); } 
 
-const char *s_game_names[] = {
-    "Divinity: Original Sin 1",
-    "Divinity: Original Sin 1 Enhanced Edition",
-    "Divinity: Original Sin 2",
-    "Divinity: Original Sin 2 Definitive Edition",
-    "Baldur's Gate 3"
-};
-
+//  @note:  when adding a new game, check if the title matches in get_game_type()
+//          add a short name for output for game_addresses.txt
+//          add a process name for process lookup
+//          update game enum
 const char *s_game_short_names[] = {
+    "none",
     "dos1",
-    "dos1",
-    "dos2",
     "dos2",
     "bg3",
 };
 
-//  @todo:  get process names for each game and store platform
-const char *s_dos1_process_names[] = 
-{
-    "EoCApp.exe"
-};
-
-//  @todo:  get process names for each game and store platform
-const char *s_dos1_ee_process_names[] = 
-{
-    "EoCApp.exe"
-};
-
-//  @todo:  get process names for each game and store platform
-const char *s_dos2_process_names[] = 
-{
-    "EoCApp.exe"
-};
-
-//  @todo:  get process names for each game and store platform
-const char *s_dos2_de_process_names[] = 
-{
-    "EoCApp.exe"
-};
-
-const char *s_bg3_process_names[] = 
-{
+const char *s_process_names[] = {
+    "EoCApp.exe",
     "bg3.exe",
     "bg3_dx11.exe",
 };
@@ -69,6 +40,7 @@ b32 process_try_to_attach();
 
 void global_button_update(GlobalButton *button);
 
+Game get_game_type(const char *window_title);
 StringCollection get_game_process_names(Game game);
 AddressCollection get_game_position_address_offsets(Game game, const char *version);
 AddressCollection get_game_level_address_offsets(Game game, const char *version);
@@ -146,15 +118,15 @@ void handle_address_block(const char *block_start, const char *block_end, void* 
             value.str[value.length] = '\0';
             
             const char *game_name = string_table_intern(value.str);
-            if (string_table_intern("bg3") == game_name)
+            if (string_table_intern(s_game_short_names[Game_BG3]) == game_name)
             {
                 current->game = Game_BG3;
             }
-            else if (string_table_intern("dos2") == game_name)
+            else if (string_table_intern(s_game_short_names[Game_DOS2_DE]) == game_name)
             {
                 current->game = Game_DOS2_DE;
             }
-            else if (string_table_intern("dos1") == game_name)
+            else if (string_table_intern(s_game_short_names[Game_DOS1_EE]) == game_name)
             {
                 current->game = Game_DOS1_EE;
             }
@@ -555,9 +527,6 @@ void init()
     }
     
     {
-        //  @todo:  configurable
-        //ctx.game_type = Game_DOS2_DE;
-        ctx.game_type = Game_BG3;
         ctx.scan_step_rate = 10;
         ctx.wiggle_amount = 10;
         ctx.wiggle_distance = 10;
@@ -648,34 +617,28 @@ void global_button_update(GlobalButton *button)
     button->state = !!state && !!mod;
 }
 
+Game get_game_type(const char *window_title)
+{
+    if (strstr(window_title, "DOS EE"))
+    {
+        return Game_DOS1_EE;
+    }
+    else if (strstr(window_title, "DOS II : DE"))
+    {
+        return Game_DOS2_DE;
+    }
+    else if (strstr(window_title, "Baldur's Gate 3"))
+    {
+        return Game_BG3;
+    }
+    return Game_None;
+}
+
 StringCollection get_game_process_names(Game game)
 {
     StringCollection collection = {};
-    if (ctx.game_type == Game_DOS1)
-    {
-        collection.strings = s_dos1_process_names;
-        collection.count = ARRAY_SIZE(s_dos1_process_names);
-    }
-    else if (ctx.game_type == Game_DOS1_EE)
-    {
-        collection.strings = s_dos1_ee_process_names;
-        collection.count = ARRAY_SIZE(s_dos1_ee_process_names);
-    }
-    else if (ctx.game_type == Game_DOS2)
-    {
-        collection.strings = s_dos2_process_names;
-        collection.count = ARRAY_SIZE(s_dos2_process_names);
-    }
-    else if (ctx.game_type == Game_DOS2_DE)
-    {
-        collection.strings = s_dos2_de_process_names;
-        collection.count = ARRAY_SIZE(s_dos2_de_process_names);
-    }
-    else if (ctx.game_type == Game_BG3)
-    {
-        collection.strings = s_bg3_process_names;
-        collection.count = ARRAY_SIZE(s_bg3_process_names);
-    }
+    collection.strings = s_process_names;
+    collection.count = ARRAY_SIZE(s_process_names);
     ASSERT(collection.strings && collection.count);
     
     return collection;
@@ -1055,7 +1018,16 @@ b32 scan_memory_addresses()
     u32 version_minor;
     u32 version_build;
     u32 version_private;
+    const char *window_title = process_get_window_title();
     const char *version = process_get_version(&version_major, &version_minor, &version_build, &version_private);
+    
+    ctx.game_type = get_game_type(window_title);
+    
+    if (ctx.game_type == Game_None)
+    {
+        return false;
+    }
+    
     AddressCollection position_address_collection = get_game_position_address_offsets(ctx.game_type, version);
     AddressCollection level_address_collection = get_game_level_address_offsets(ctx.game_type, version);
     

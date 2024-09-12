@@ -103,13 +103,12 @@ u64 hash_fnv1a(void *data, u64 size);
 
 enum Game
 {
+    Game_None,
     // Divinity: Original Sin 1
     // probably not needed since camera is free and easy to fling anywhere
-    Game_DOS1,
     Game_DOS1_EE,
     // Divinity: Original Sin 2
     // mod tools makes this one a bit redudnant, camera is a bit more restricted but might still be useful for low angle?
-    Game_DOS2,
     Game_DOS2_DE,
     // Baldur's Gate 3
     Game_BG3,

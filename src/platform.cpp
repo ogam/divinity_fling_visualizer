@@ -19,11 +19,14 @@ struct ProcessInfo
     u64 module_size;
     char file_name[1024];
     char version[1024];
+    char name[1024];
     
     u32 version_major;
     u32 version_minor;
     u32 version_build;
     u32 version_private;
+    
+    u32 process_id;
     
     b32 is_gog;
     b32 is_dx11;
@@ -46,6 +49,7 @@ BOOL CALLBACK enum_windows_get_hwnd(HWND hwnd, LPARAM param)
     if(!should_continue_enumerating)
     {
         process_info.hwnd = hwnd;
+        GetWindowText(hwnd, process_info.name, sizeof(process_info.name));
     }
     return should_continue_enumerating;
 }
@@ -177,8 +181,11 @@ void process_info_init()
     process_info.base_address = 0;
     process_info.module_size = 0;
     process_info.thread_id = 0;
+    process_info.is_dx11 = false;
     memset(process_info.version, 0, sizeof(process_info.version));
     process_info.is_gog = false;
+    memset(process_info.name, 0, sizeof(process_info.name));
+    process_info.process_id = 0;
     
     if (process_info.signature_scanner_buffer)
     {
@@ -308,6 +315,7 @@ b32 process_find(StringCollection *process_names)
                     if (process_info.base_address)
                     {
                         process_info.handle = handle_process;
+                        process_info.process_id = pe32.th32ProcessID;
                     }
                     break;
                 }
@@ -598,6 +606,16 @@ b32 process_is_gog()
 b32 process_is_dx11()
 {
     return process_info.is_dx11;
+}
+
+const char *process_get_window_title()
+{
+    if (process_info.name == 0 && process_info.process_id)
+    {
+        EnumWindows(enum_windows_get_hwnd, process_info.process_id);
+    }
+    
+    return process_info.name;
 }
 
 const char *process_get_version(u32 *version_major, u32 *version_minor, u32 *version_build, u32 *version_private)
