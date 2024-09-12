@@ -410,6 +410,7 @@ struct VisualizerCtx
             u32 selected_circle_color;
             s16 scan_step_rate;
             s32 wiggle_amount;
+            s32 wiggle_distance;
         };
         
         struct

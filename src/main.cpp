@@ -19,6 +19,14 @@ const char *s_game_names[] = {
     "Baldur's Gate 3"
 };
 
+const char *s_game_short_names[] = {
+    "dos1",
+    "dos1",
+    "dos2",
+    "dos2",
+    "bg3",
+};
+
 //  @todo:  get process names for each game and store platform
 const char *s_dos1_process_names[] = 
 {
@@ -68,8 +76,13 @@ AddressCollection get_game_level_address_offsets(Game game, const char *version)
 void co_bg3_do_set_world_position(mco_coro *co);
 void setup_do_set_world_position(Game game, V2i screen_position, mco_coro **co);
 
-void co_bg3_do_scan_regions(mco_coro *co);
-void asetup_do_scan_regions(Game game, mco_coro **co);
+void co_utility_open_inventory(mco_coro *co, u8 inventory_vk, u8 inventory_sc);
+void co_utility_close_inventory(mco_coro *co, u8 inventory_vk, u8 inventory_sc);
+void co_utility_begin_item_drag(mco_coro *co, s16 x, s16 y);
+void co_utility_do_wiggle(mco_coro *co, s32 wiggle_amount, s32 wiggle_distance);
+
+void co_do_scan_regions(mco_coro *co);
+void setup_do_scan_regions(Game game, mco_coro **co);
 
 void co_do_screenshot(mco_coro *co);
 void setup_do_screenshot(mco_coro **co);
@@ -543,9 +556,11 @@ void init()
     
     {
         //  @todo:  configurable
+        //ctx.game_type = Game_DOS2_DE;
         ctx.game_type = Game_BG3;
         ctx.scan_step_rate = 10;
         ctx.wiggle_amount = 10;
+        ctx.wiggle_distance = 10;
     }
     // ui
     {
@@ -674,17 +689,44 @@ AddressCollection get_game_position_address_offsets(Game game, const char *versi
     b32 is_process_gog = process_is_gog();
     b32 is_dx11 = process_is_dx11();
     
-    for (s32 index = 0; index < ctx.address_version_collection.count; ++index)
+    if (game == Game_BG3)
     {
-        AddressVersionInfo *address_version_info = ctx.address_version_collection.items + index;
-        if (address_version_info->game == game && 
-            address_version_info->version == interned_version && 
-            address_version_info->is_gog == is_process_gog &&
-            address_version_info->additional_info == is_dx11)
+        for (s32 index = 0; index < ctx.address_version_collection.count; ++index)
         {
-            collection.addresses = address_version_info->node_addresses;
-            collection.count = address_version_info->node_count;
-            break;
+            AddressVersionInfo *address_version_info = ctx.address_version_collection.items + index;
+            b32 is_same_game = address_version_info->game == game;
+            b32 is_same_version = address_version_info->version == interned_version;
+            b32 is_same_store_platform = address_version_info->is_gog == is_process_gog;
+            b32 is_same_graphics_api = address_version_info->additional_info == is_dx11;
+            
+            if (is_same_game && 
+                is_same_version && 
+                is_same_store_platform &&
+                is_same_graphics_api)
+            {
+                collection.addresses = address_version_info->node_addresses;
+                collection.count = address_version_info->node_count;
+                break;
+            }
+        }
+    }
+    else
+    {
+        for (s32 index = 0; index < ctx.address_version_collection.count; ++index)
+        {
+            AddressVersionInfo *address_version_info = ctx.address_version_collection.items + index;
+            b32 is_same_game = address_version_info->game == game;
+            b32 is_same_version = address_version_info->version == interned_version;
+            b32 is_same_store_platform = address_version_info->is_gog == is_process_gog;
+            
+            if (is_same_game && 
+                is_same_version && 
+                is_same_store_platform)
+            {
+                collection.addresses = address_version_info->node_addresses;
+                collection.count = address_version_info->node_count;
+                break;
+            }
         }
     }
     
@@ -699,24 +741,89 @@ AddressCollection get_game_level_address_offsets(Game game, const char *version)
     b32 is_process_gog = process_is_gog();
     b32 is_dx11 = process_is_dx11();
     
-    for (s32 index = 0; index < ctx.address_version_collection.count; ++index)
+    if (game == Game_BG3)
     {
-        AddressVersionInfo *address_version_info = ctx.address_version_collection.items + index;
-        if (address_version_info->game == game && 
-            address_version_info->version == interned_version && 
-            address_version_info->is_gog == is_process_gog &&
-            address_version_info->additional_info == is_dx11)
+        for (s32 index = 0; index < ctx.address_version_collection.count; ++index)
         {
-            collection.addresses = address_version_info->level_addresses;
-            collection.count = address_version_info->level_count;
-            break;
+            AddressVersionInfo *address_version_info = ctx.address_version_collection.items + index;
+            b32 is_same_game = address_version_info->game == game;
+            b32 is_same_version = address_version_info->version == interned_version;
+            b32 is_same_store_platform = address_version_info->is_gog == is_process_gog;
+            b32 is_same_graphics_api = address_version_info->additional_info == is_dx11;
+            if (is_same_game && 
+                is_same_version && 
+                is_same_store_platform &&
+                is_same_graphics_api)
+            {
+                collection.addresses = address_version_info->level_addresses;
+                collection.count = address_version_info->level_count;
+                break;
+            }
         }
     }
-    
+    else
+    {
+        for (s32 index = 0; index < ctx.address_version_collection.count; ++index)
+        {
+            AddressVersionInfo *address_version_info = ctx.address_version_collection.items + index;
+            b32 is_same_game = address_version_info->game == game;
+            b32 is_same_version = address_version_info->version == interned_version;
+            b32 is_same_store_platform = address_version_info->is_gog == is_process_gog;
+            
+            if (is_same_game && 
+                is_same_version && 
+                is_same_store_platform)
+            {
+                collection.addresses = address_version_info->level_addresses;
+                collection.count = address_version_info->level_count;
+                break;
+            }
+        }
+    }
     return collection;
 }
 
-void co_bg3_do_set_world_position(mco_coro *co)
+void co_utility_open_inventory(mco_coro *co, u8 inventory_vk, u8 inventory_sc)
+{
+    push_keyboard_event(inventory_vk, inventory_sc, 0, 0);
+    YIELD_WAIT(co, INPUT_DELAY);
+    push_keyboard_event(inventory_vk, inventory_sc, KeyEvent_KeyUp, 0);
+    YIELD_WAIT(co, INPUT_DELAY);
+}
+
+void co_utility_close_inventory(mco_coro *co, u8 inventory_vk, u8 inventory_sc)
+{
+    push_keyboard_event(inventory_vk, inventory_sc, 0, 0);
+    YIELD_WAIT(co, INPUT_DELAY);
+    push_keyboard_event(inventory_vk, inventory_sc, KeyEvent_KeyUp, 0);
+    YIELD_WAIT(co, INPUT_DELAY);
+}
+
+void co_utility_begin_item_drag(mco_coro *co, s16 x, s16 y)
+{
+    push_mouse_move_absolute({x, y});
+    YIELD_WAIT(co, INPUT_DELAY);
+    push_mouse_button(MouseButton_Left, true);
+    YIELD_WAIT(co, INPUT_DELAY);
+}
+
+void co_utility_do_wiggle(mco_coro *co, s32 wiggle_amount, s32 wiggle_distance)
+{
+    s32 wiggle_counter = wiggle_amount;
+    while (wiggle_counter--)
+    {
+        push_mouse_move_relative({(s16)wiggle_distance, 0});
+        mco_yield(co);
+    }
+    wiggle_counter = wiggle_amount;
+    while (wiggle_counter--)
+    {
+        push_mouse_move_relative({(s16)-wiggle_distance, 0});
+        mco_yield(co);
+    }
+}
+
+void co_do_set_world_position(mco_coro *co)
 {
     VisualizerCtx *ctx = (VisualizerCtx*)mco_get_user_data(co);
     V2i screen_position;
@@ -733,38 +840,16 @@ void co_bg3_do_set_world_position(mco_coro *co)
     process_focus();
     YIELD_WAIT(co, INPUT_DELAY);
     
-    // open inventory
-    push_keyboard_event(inventory_vk, inventory_sc, 0, 0);
-    YIELD_WAIT(co, INPUT_DELAY);
-    push_keyboard_event(inventory_vk, inventory_sc, KeyEvent_KeyUp, 0);
-    YIELD_WAIT(co, INPUT_DELAY);
+    co_utility_open_inventory(co, inventory_vk, inventory_sc);
+    co_utility_begin_item_drag(co, x, y);
+    co_utility_do_wiggle(co, ctx->wiggle_amount, ctx->wiggle_distance);
+    co_utility_close_inventory(co, inventory_vk, inventory_sc);
     
-    // begin item drag
-    push_mouse_move_absolute({x, y});
-    YIELD_WAIT(co, INPUT_DELAY);
-    push_mouse_button(MouseButton_Left, true);
-    YIELD_WAIT(co, INPUT_DELAY);
-    
-    // close inventory
-    push_keyboard_event(inventory_vk, inventory_sc, 0, 0);
-    YIELD_WAIT(co, INPUT_DELAY);
-    push_keyboard_event(inventory_vk, inventory_sc, KeyEvent_KeyUp, 0);
-    YIELD_WAIT(co, INPUT_DELAY);
+    // move to fixed position
     push_mouse_move_absolute(screen_position);
     YIELD_WAIT(co, INPUT_DELAY);
     
-    s32 wiggle_counter = ctx->wiggle_amount;
-    while (wiggle_counter--)
-    {
-        push_mouse_move_relative({1, 0});
-        mco_yield(co);
-    }
-    wiggle_counter = ctx->wiggle_amount;
-    while (wiggle_counter--)
-    {
-        push_mouse_move_relative({-1, 0});
-        mco_yield(co);
-    }
+    co_utility_do_wiggle(co, ctx->wiggle_amount, ctx->wiggle_distance);
     
     push_mouse_button(MouseButton_Left, false);
 }
@@ -774,10 +859,7 @@ void setup_do_set_world_position(Game game, V2i screen_position, mco_coro **co)
     ASSERT(co);
     void (*co_fn)(mco_coro*) = nullptr;
     
-    if (game == Game_BG3)
-    {
-        co_fn = co_bg3_do_set_world_position;
-    }
+    co_fn = co_do_set_world_position;
     
     if (co_fn)
     {
@@ -806,7 +888,7 @@ void setup_do_set_world_position(Game game, V2i screen_position, mco_coro **co)
     }
 }
 
-void co_bg3_do_scan_regions(mco_coro *co)
+void co_do_scan_regions(mco_coro *co)
 {
     VisualizerCtx *ctx = (VisualizerCtx*)mco_get_user_data(co);
     u8 inventory_vk;
@@ -833,23 +915,10 @@ void co_bg3_do_scan_regions(mco_coro *co)
     
     YIELD_WAIT(co, INPUT_DELAY);
     
-    // open inventory
-    push_keyboard_event(inventory_vk, inventory_sc, 0, 0);
-    YIELD_WAIT(co, INPUT_DELAY);
-    push_keyboard_event(inventory_vk, inventory_sc, KeyEvent_KeyUp, 0);
-    YIELD_WAIT(co, INPUT_DELAY);
-    
-    // begin item drag
-    push_mouse_move_absolute({x, y});
-    YIELD_WAIT(co, INPUT_DELAY);
-    push_mouse_button(MouseButton_Left, true);
-    YIELD_WAIT(co, INPUT_DELAY);
-    
-    // close inventory
-    push_keyboard_event(inventory_vk, inventory_sc, 0, 0);
-    YIELD_WAIT(co, INPUT_DELAY);
-    push_keyboard_event(inventory_vk, inventory_sc, KeyEvent_KeyUp, 0);
-    YIELD_WAIT(co, INPUT_DELAY);
+    co_utility_open_inventory(co, inventory_vk, inventory_sc);
+    co_utility_begin_item_drag(co, x, y);
+    co_utility_do_wiggle(co, ctx->wiggle_amount, ctx->wiggle_distance);
+    co_utility_close_inventory(co, inventory_vk, inventory_sc);
     
     V3f previous_position = ctx->position;
     Aabbi screen_bounds = ctx->game_screen_bounds;
@@ -924,10 +993,7 @@ void setup_do_scan_regions(Game game, mco_coro **co)
     ASSERT(co);
     void (*co_fn)(mco_coro*) = nullptr;
     
-    if (game == Game_BG3)
-    {
-        co_fn = co_bg3_do_scan_regions;
-    }
+    co_fn = co_do_scan_regions;
     
     if (co_fn)
     {
@@ -1049,13 +1115,14 @@ b32 scan_memory_addresses()
                 char output_buffer[1024];
                 u64 output_buffer_length = snprintf(output_buffer, sizeof(output_buffer), 
                                                     "{\n" \
-                                                    "\tgame = bg3\n" \
+                                                    "\tgame = %s\n" \
                                                     "\tplatform = %s\n" \
                                                     "\tversion = %s\n" \
                                                     "\tgraphics = %s\n" \
                                                     "\tnode_offsets = %s\n" \
                                                     "\tlevel_offsets = %s\n" \
                                                     "}\n",
+                                                    s_game_short_names[new_address_version_info->game],
                                                     signature->is_gog ? "gog" : "steam",
                                                     new_address_version_info->version,
                                                     new_address_version_info->additional_info ? "dx11" : "vulkan",
@@ -1169,6 +1236,22 @@ void game_actions()
         if (!ctx.level_name.length)
         {
             memory_scan_failed = true;
+        }
+        else
+        {
+            // clip end of name of invalid characters
+            u8 new_length = ctx.level_name.length;
+            for (u8 index = 0; index < ctx.level_name.length; ++index)
+            {
+                if (ctx.level_name.str[index] < ' ')
+                {
+                    new_length = index;
+                    break;
+                }
+            }
+            
+            ctx.level_name.length = new_length;
+            ctx.level_name.str[ctx.level_name.length] = 0;
         }
         ctx.game_screen_bounds = process_window_size();
         
