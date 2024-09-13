@@ -340,6 +340,11 @@ typedef struct AppRenderTexture
     AppTexture depth;
 } AppRenderTexture;
 
+struct WorldInfo
+{
+    StringCollection level_names;
+};
+
 struct PointOfInterest
 {
     String name;
@@ -446,6 +451,8 @@ struct VisualizerCtx
     s32 memory_addresses_dirty_counter;
     u64 position_address;
     u64 level_name_address;
+    
+    WorldInfo world_infos[Game_Count];
     
     // hooked game info
     V2i game_screen_position;

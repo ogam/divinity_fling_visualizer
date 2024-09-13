@@ -433,10 +433,9 @@ b32 do_window(VisualizerCtx *ctx)
         }
         if (ImGui::MenuItem("Load Assets"))
         {
-            if (Hashmap *world = load_assets(&ctx->arena))
+            if (load_assets(&ctx->arena, ctx))
             {
-                ctx->world = world;
-                ctx->max_world_region = calculate_max_world_region(world);
+                ctx->max_world_region = calculate_max_world_region(ctx->world);
             }
             else
             {
@@ -2091,7 +2090,7 @@ void create_default_textures()
     hashmap_set(CACHED_TEXTURES, CLIPBOARD_TEXTURE_NAME, (AppTexture*)&clipboard_texture);
 }
 
-Hashmap* load_assets(Arena *arena)
+b32 load_assets(Arena *arena, VisualizerCtx *ctx)
 {
     directory_push("data");
     FilePathList file_path_list = LoadDirectoryFilesEx(WORK_PATH.str, ".txt", true);
@@ -2139,7 +2138,7 @@ Hashmap* load_assets(Arena *arena)
     
     if (!directory_count)
     {
-        return nullptr;
+        goto LOAD_ASSETS_CLEANUP;
     }
     
     if (CACHED_TEXTURES)
@@ -2153,6 +2152,12 @@ Hashmap* load_assets(Arena *arena)
     }
     
     arena_clear(arena);
+    for (s32 index = 0; index < Game_Count; ++index)
+    {
+        ctx->world_infos[index].level_names.strings = (const char**)arena_alloc(arena, sizeof(const char*) * 1024);
+        ctx->world_infos[index].level_names.count = 0;
+    }
+    
     CACHED_TEXTURES = hashmap_make(arena, sizeof(AppTexture), 512);
     world = hashmap_make(arena, sizeof(Level), directory_count);
     
@@ -2348,10 +2353,13 @@ Hashmap* load_assets(Arena *arena)
     directory_pop();
     ASSERT(STRCMP(WORK_PATH.str, GetApplicationDirectory()) && WORK_PATH_DEPTH == 0);
     
-    return world;
+    LOAD_ASSETS_CLEANUP:
+    ctx->world = world;
+    
+    return world != nullptr;
 }
 
-Hashmap* load_default_assets(Arena *arena)
+b32 load_default_assets(Arena *arena, VisualizerCtx *ctx)
 {
     ASSERT(arena);
     if (CACHED_TEXTURES)
@@ -2365,12 +2373,19 @@ Hashmap* load_default_assets(Arena *arena)
     }
     
     arena_clear(arena);
+    for (s32 index = 0; index < Game_Count; ++index)
+    {
+        ctx->world_infos[index].level_names.strings = (const char**)arena_alloc(arena, sizeof(const char*) * 1024);
+        ctx->world_infos[index].level_names.count = 0;
+    }
+    
     CACHED_TEXTURES = hashmap_make(arena, sizeof(AppTexture), 512);
     Hashmap *world = hashmap_make(arena, sizeof(Level), 32);
     
     create_default_textures();
+    ctx->world = world;
     
-    return world;
+    return world != nullptr;
 }
 
 Aabbf calculate_max_world_region(Hashmap *world)

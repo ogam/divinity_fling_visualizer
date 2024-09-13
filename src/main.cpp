@@ -1435,11 +1435,10 @@ int main(void)
     window_create(1280, 720, "Divinity Fling Visualizer");
     init();
     load_settings();
-    ctx.world = load_assets(&ctx.arena);
     
-    if (!ctx.world)
+    if (!load_assets(&ctx.arena, &ctx))
     {
-        ctx.world = load_default_assets(&ctx.arena);
+        load_default_assets(&ctx.arena, &ctx);
     }
     
     ctx.max_world_region = calculate_max_world_region(ctx.world);
