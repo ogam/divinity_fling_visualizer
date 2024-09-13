@@ -101,6 +101,17 @@ const char **get_key_code_names();
 
 u64 hash_fnv1a(void *data, u64 size);
 
+//  @note:  when adding a new game, check if the title matches in get_game_type()
+//          add a short name for output for game_addresses.txt
+//          add a process name for process lookup
+//          update game enum
+static const char *s_game_short_names[] = {
+    "none",
+    "dos1",
+    "dos2",
+    "bg3",
+};
+
 enum Game
 {
     Game_None,
@@ -443,10 +454,14 @@ struct VisualizerCtx
     String level_name;
     
     Game game_type;
+    // none defaults to current active game_type
+    Game game_world_to_display;
     mco_coro *action_co;
     Action next_action;
     Action ui_next_action;
     b32 global_hotkeys_enabled;
+    
+    b32 force_rescan_memory;
     
     // delay between each process search
     f64 next_process_search_time;

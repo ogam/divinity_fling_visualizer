@@ -11,17 +11,6 @@
 #define INPUT_DELAY (1.0 / 30.0)
 #define YIELD_WAIT(CO, DELAY) { f64 delay = get_time() +  DELAY; while (delay > get_time()) mco_yield(CO); } 
 
-//  @note:  when adding a new game, check if the title matches in get_game_type()
-//          add a short name for output for game_addresses.txt
-//          add a process name for process lookup
-//          update game enum
-const char *s_game_short_names[] = {
-    "none",
-    "dos1",
-    "dos2",
-    "bg3",
-};
-
 const char *s_process_names[] = {
     "EoCApp.exe",
     "bg3.exe",
@@ -1179,6 +1168,15 @@ void load_settings()
 void game_actions()
 {
     static u64 previous_position_address = 0;
+    if (ctx.force_rescan_memory)
+    {
+        if (ctx.memory_addresses_dirty_counter == 0)
+        {
+            ctx.memory_addresses_dirty_counter = 1;
+        }
+        ctx.force_rescan_memory = false;
+    }
+    
     if (ctx.memory_addresses_dirty_counter)
     {
         if (get_time() > ctx.next_process_search_time && !scan_memory_addresses())

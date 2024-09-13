@@ -434,6 +434,11 @@ b32 do_window(VisualizerCtx *ctx)
                 TraceLog(LOG_ERROR, "Failed to load assets!");
             }
         }
+        if (ImGui::MenuItem("Force Rescan"))
+        {
+            ctx->force_rescan_memory = true;
+            ImGui::SetItemTooltip("If level or world position becomes stale (no longer updating from game), forcefully rescan these addresses");
+        }
         if (ImGui::MenuItem("Settings"))
         {
             ctx->window_type ^= WindowType_Settings;
@@ -1797,6 +1802,28 @@ b32 do_settings_window(VisualizerCtx *ctx)
         const char **key_code_names = get_key_code_names();
         
         String input_buffer;
+        {
+            ImGui::Text("Game World");
+            if (ImGui::RadioButton("Auto", ctx->game_world_to_display == Game_None))
+            {
+                ctx->game_world_to_display = Game_None;
+            }
+            ImGui::SameLine();
+            if (ImGui::RadioButton(s_game_short_names[Game_DOS1_EE], ctx->game_world_to_display == Game_DOS1_EE))
+            {
+                ctx->game_world_to_display = Game_DOS1_EE;
+            }
+            ImGui::SameLine();
+            if (ImGui::RadioButton(s_game_short_names[Game_DOS2_DE], ctx->game_world_to_display == Game_DOS2_DE))
+            {
+                ctx->game_world_to_display = Game_DOS2_DE;
+            }
+            ImGui::SameLine();
+            if (ImGui::RadioButton(s_game_short_names[Game_BG3], ctx->game_world_to_display == Game_BG3))
+            {
+                ctx->game_world_to_display = Game_BG3;
+            }
+        }
         {
             ImGui::Text("Fling");
             ImGui::SetItemTooltip("Sets fling position");
