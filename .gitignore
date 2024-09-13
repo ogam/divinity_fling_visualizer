@@ -3,3 +3,8 @@ settings
 temp
 builds
 builds-debug
+*.zip
+*.7z
+*.rar
+*.gz
+*.4coder

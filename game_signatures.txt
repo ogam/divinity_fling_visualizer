@@ -256,3 +256,65 @@
 	version_build = 1
 	version_private = 4811634
 }
+
+this has not been added to asl script as a debugging option for livesplit
+------
+level name
+
+eocapp.exe+129C08D - 4C 8B 2D 74446E01     - mov r13,[eocapp.exe+2980508]
+eocapp.exe+129C094 - 89 4C 24 38           - mov [rsp+38],ecx
+eocapp.exe+129C098 - 89 44 24 3C           - mov [rsp+3C],eax
+
+offset, 0x48, 0xC0A
+------
+node, use this for nodeflings
+eocapp.exe+13EF369 - 48 8B 1D 30145F01     - mov rbx,[eocapp.exe+29E07A0]
+eocapp.exe+13EF370 - 48 8B F2              - mov rsi,rdx
+eocapp.exe+13EF373 - 48 8B 01              - mov rax,[rcx]
+
+offset, 0x18, 0x148, 0x18, 0x70, 0x30
+------
+world mouse position, use this for superflings
+eocapp.exe+191BD3A - 48 8B 0D 9F4B0C01     - mov rcx,[eocapp.exe+29E08E0]
+eocapp.exe+191BD41 - 4C 8B CD              - mov r9,rbp
+eocapp.exe+191BD44 - 4C 8B C0              - mov r8,rax
+
+offset, 0x3F0, 0x580, 0x128, 0x160
+
+node
+{
+	game = dos2
+	platform = steam
+	graphics = dx11
+	node_signature = 0x48, 0x8B, 0x1D, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0xF2, 0x48, 0x8B, 0x01
+	level_signature = 0x4C, 0x8B, 0x2D, 0x00, 0x00, 0x00, 0x00, 0x89, 0x4C, 0x24, 0x38, 0x89, 0x44, 0x24, 0x3C
+	node_search_start = 3
+	node_search_length = 4
+	level_search_start = 3
+	level_search_length = 4
+	node_address_offsets = 0x0, 0x18, 0x148, 0x18, 0x70, 0x30
+	level_address_offsets = 0x0, 0x48, 0xC0A
+	version_major = 3
+	version_minor = 1
+	version_build = 1
+	version_private = 061173735
+}
+
+world
+{
+	game = dos2
+	platform = steam
+	graphics = dx11
+	node_signature = 0x4C, 0x8B, 0x35, 0x00, 0x00, 0x00, 0x00, 0x45, 0x8B, 0xBE, 0x9C, 0x01, 0x00, 0x00, 0x4D, 0x85 0xFF
+	level_signature = 0x4C, 0x8B, 0x2D, 0x00, 0x00, 0x00, 0x00, 0x89, 0x4C, 0x24, 0x38, 0x89, 0x44, 0x24, 0x3C
+	node_search_start = 3
+	node_search_length = 4
+	level_search_start = 3
+	level_search_length = 4
+	node_address_offsets = 0x0, 0x190, 0x0, 0x128, 0x68, 0x160
+	level_address_offsets = 0x0, 0x48, 0xC0A
+	version_major = 3
+	version_minor = 1
+	version_build = 1
+	version_private = 061173735
+}

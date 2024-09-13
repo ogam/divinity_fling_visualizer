@@ -27,8 +27,10 @@
 
 //  @todo:  build.bat and increment on every build
 #define APP_VERSION_MAJOR 0
-#define APP_VERSION_MINOR 0
-#define APP_VERSION_BUILD 5
+#define APP_VERSION_MINOR 1
+#define APP_VERSION_BUILD 0
+
+#define MAX_LEVELS 1024
 
 typedef unsigned char u8;
 typedef unsigned short u16;
@@ -101,15 +103,25 @@ const char **get_key_code_names();
 
 u64 hash_fnv1a(void *data, u64 size);
 
+//  @note:  when adding a new game, check if the title matches in get_game_type()
+//          add a short name for output for game_addresses.txt
+//          add a process name for process lookup
+//          update game enum
+static const char *s_game_short_names[] = {
+    "none",
+    "dos1",
+    "dos2",
+    "bg3",
+};
+
 enum Game
 {
+    Game_None,
     // Divinity: Original Sin 1
     // probably not needed since camera is free and easy to fling anywhere
-    Game_DOS1,
     Game_DOS1_EE,
     // Divinity: Original Sin 2
     // mod tools makes this one a bit redudnant, camera is a bit more restricted but might still be useful for low angle?
-    Game_DOS2,
     Game_DOS2_DE,
     // Baldur's Gate 3
     Game_BG3,
@@ -330,6 +342,11 @@ typedef struct AppRenderTexture
     AppTexture depth;
 } AppRenderTexture;
 
+struct WorldInfo
+{
+    StringCollection level_names;
+};
+
 struct PointOfInterest
 {
     String name;
@@ -353,6 +370,8 @@ struct PointOfInterestCollection
 
 struct Level
 {
+    Game game;
+    const char *name;
     PointOfInterest *regions;
     PointOfInterest *objects;
     s32 regions_count;
@@ -410,6 +429,7 @@ struct VisualizerCtx
             u32 selected_circle_color;
             s16 scan_step_rate;
             s32 wiggle_amount;
+            s32 wiggle_distance;
         };
         
         struct
@@ -436,6 +456,8 @@ struct VisualizerCtx
     u64 position_address;
     u64 level_name_address;
     
+    WorldInfo world_infos[Game_Count];
+    
     // hooked game info
     V2i game_screen_position;
     Aabbi game_screen_bounds;
@@ -443,10 +465,14 @@ struct VisualizerCtx
     String level_name;
     
     Game game_type;
+    // none defaults to current active game_type
+    Game game_world_to_display;
     mco_coro *action_co;
     Action next_action;
     Action ui_next_action;
     b32 global_hotkeys_enabled;
+    
+    b32 force_rescan_memory;
     
     // delay between each process search
     f64 next_process_search_time;
@@ -1338,4 +1364,16 @@ static inline void dump_point_of_interests_to_file(const char *path, PointOfInte
         
         fclose(file_handle);
     }
+}
+
+static inline StringCollection *get_level_names(VisualizerCtx *ctx)
+{
+    Game game_world_to_display = ctx->game_world_to_display;
+    if (game_world_to_display == Game_None)
+    {
+        game_world_to_display = ctx->game_type;
+    }
+    
+    StringCollection *level_names = &ctx->world_infos[game_world_to_display].level_names;
+    return level_names;
 }

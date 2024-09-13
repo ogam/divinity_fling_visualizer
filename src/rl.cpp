@@ -220,9 +220,18 @@ void do_world_filter(VisualizerCtx *ctx, b32 add_draw_region)
             ImGui::SameLine();
             if (ImGui::Button("Focus"))
             {
-                V3f size = aabbf_size(ctx->filter_world_region);
-                camera.target.x = ctx->filter_world_region.min.x + size.x * 0.5f;
-                camera.target.y = ctx->filter_world_region.min.z + size.z * 0.5f;
+                if (ctx->selected_record_index < ctx->recorded_world_positions.count)
+                {
+                    V3f target = ctx->recorded_world_positions.points[ctx->selected_record_index];
+                    camera.target.x = target.x;
+                    camera.target.y = target.z;
+                }
+                else
+                {
+                    V3f size = aabbf_size(ctx->filter_world_region);
+                    camera.target.x = ctx->filter_world_region.min.x + size.x * 0.5f;
+                    camera.target.y = ctx->filter_world_region.min.z + size.z * 0.5f;
+                }
             }
             ImGui::SameLine();
             ImGui::Checkbox("Draw Scan Samples", (bool*)&ctx->map_draw_scan_samples);
@@ -424,15 +433,19 @@ b32 do_window(VisualizerCtx *ctx)
         }
         if (ImGui::MenuItem("Load Assets"))
         {
-            if (Hashmap *world = load_assets(&ctx->arena))
+            if (load_assets(&ctx->arena, ctx))
             {
-                ctx->world = world;
-                ctx->max_world_region = calculate_max_world_region(world);
+                ctx->max_world_region = calculate_max_world_region(ctx);
             }
             else
             {
                 TraceLog(LOG_ERROR, "Failed to load assets!");
             }
+        }
+        if (ImGui::MenuItem("Force Rescan"))
+        {
+            ctx->force_rescan_memory = true;
+            ImGui::SetItemTooltip("If level or world position becomes stale (no longer updating from game), forcefully rescan these addresses");
         }
         if (ImGui::MenuItem("Settings"))
         {
@@ -1068,20 +1081,26 @@ void do_map_window(VisualizerCtx *ctx)
         {
             if (ctx->world)
             {
-                for (s32 index = 0; index < ctx->world->count; ++index)
+                StringCollection *level_names = get_level_names(ctx);
+                
+                for (s32 index = 0; index < level_names->count; ++index)
                 {
-                    const char *level_name = (const char*)ctx->world->keys[index];
-                    if (ImGui::BeginTabItem(level_name))
+                    const char *level_name = (const char*)level_names->strings[index];
+                    current_level = (Level*)hashmap_get(ctx->world, level_name);
+                    
+                    if (current_level)
                     {
-                        current_level = (Level*)ctx->world->values[index];
-                        current_level_name = level_name;
-                        if (current_level != ctx->previous_tab_level)
+                        if (ImGui::BeginTabItem(level_name))
                         {
-                            ctx->current_drawing_aabbf = nullptr;
+                            current_level_name = level_name;
+                            if (current_level != ctx->previous_tab_level)
+                            {
+                                ctx->current_drawing_aabbf = nullptr;
+                            }
+                            ctx->current_tab_level = current_level;
+                            ctx->previous_tab_level = current_level;
+                            ImGui::EndTabItem();
                         }
-                        ctx->current_tab_level = current_level;
-                        ctx->previous_tab_level = current_level;
-                        ImGui::EndTabItem();
                     }
                 }
             }
@@ -1328,14 +1347,28 @@ void do_map_window(VisualizerCtx *ctx)
                     string_printf(&clipboard_text, "%.2f, %.2f, %.2f", ctx->position.x, ctx->position.y, ctx->position.z);
                     SetClipboardText(clipboard_text.str);
                 }
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                {
+                    camera.target.x = ctx->position.x;
+                    camera.target.y = ctx->position.z;
+                }
             }
-            ImGui::SetItemTooltip("Ctrl + C to copy coordinates to clipboard");
+            ImGui::SetItemTooltip("Ctrl + C to copy coordinates to clipboard\nRight Click to focus");
             ImGui::InputFloat3("Sample Point", (float*)&ctx->world_sample_point, "%.2f", ImGuiInputTextFlags_CharsDecimal);
-            ImGui::SetItemTooltip("Ctrl + Left click to pick a sample from map");
+            if (ImGui::IsItemHovered())
+            {
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                {
+                    camera.target.x = ctx->world_sample_point.x;
+                    camera.target.y = ctx->world_sample_point.z;
+                }
+            }
+            ImGui::SetItemTooltip("Ctrl + Left click to pick a sample from map\nRight Click to focus");
+            
             ImGui::PopItemWidth();
             if (ImGui::Button("Calculate World Bounds")) 
             {
-                ctx->max_world_region = calculate_max_world_region(ctx->world);
+                ctx->max_world_region = calculate_max_world_region(ctx);
             }
             ImGui::SameLine();
             ImGui::Checkbox("Use World Bounds", (bool*)&ctx->use_world_bounds);
@@ -1798,6 +1831,28 @@ b32 do_settings_window(VisualizerCtx *ctx)
         
         String input_buffer;
         {
+            ImGui::Text("Game World");
+            for (s32 index = 0; index < Game_Count; ++index)
+            {
+                b32 is_active = ctx->game_world_to_display == index;
+                const char *radio_button_name = s_game_short_names[index];
+                if (index == Game_None)
+                {
+                    radio_button_name = "Auto";
+                }
+                
+                if (ImGui::RadioButton(radio_button_name, is_active))
+                {
+                    ctx->game_world_to_display = (Game)index;
+                }
+                
+                if (index != Game_Count - 1)
+                {
+                    ImGui::SameLine();
+                }
+            }
+        }
+        {
             ImGui::Text("Fling");
             ImGui::SetItemTooltip("Sets fling position");
             ImGui::SameLine();
@@ -1897,8 +1952,9 @@ b32 do_about_window(VisualizerCtx *ctx)
     string_printf(&id_buffer, "About v%d.%d.%d##about_window", APP_VERSION_MAJOR, APP_VERSION_MINOR, APP_VERSION_BUILD);
     ImGui::Begin(id_buffer.str, (bool*)&show);
     {
-        ImGui::Text("Tool used for BG3 to find where you place your item fling positions in the world");
-        ImGui::Text("Currently only supports bg3 after v4.1.1.3905231, this is a minor patch after patch 4");
+        ImGui::Text("Tool used for larian games (DOS2/BG3) to find where you place your item fling positions in the world");
+        ImGui::Text("dos2 - definitive edition");
+        ImGui::Text("bg3 - supported after v4.1.1.3905231, this is a minor patch after patch 4");
         ImGui::Text("Created by Ogam");
         if (ImGui::Button("CPRG Discord"))
         {
@@ -2041,14 +2097,10 @@ void create_default_textures()
     hashmap_set(CACHED_TEXTURES, CLIPBOARD_TEXTURE_NAME, (AppTexture*)&clipboard_texture);
 }
 
-Hashmap* load_assets(Arena *arena)
+b32 load_assets(Arena *arena, VisualizerCtx *ctx)
 {
     directory_push("data");
     FilePathList file_path_list = LoadDirectoryFilesEx(WORK_PATH.str, ".txt", true);
-    PointOfInterest *regions = nullptr;
-    PointOfInterest *objects = nullptr;
-    s32 regions_count = 0;
-    s32 objects_count = 0;
     s32 directory_count = 0;
     Hashmap *world = nullptr;
     
@@ -2089,7 +2141,7 @@ Hashmap* load_assets(Arena *arena)
     
     if (!directory_count)
     {
-        return nullptr;
+        goto LOAD_ASSETS_CLEANUP;
     }
     
     if (CACHED_TEXTURES)
@@ -2103,6 +2155,12 @@ Hashmap* load_assets(Arena *arena)
     }
     
     arena_clear(arena);
+    for (s32 index = 0; index < Game_Count; ++index)
+    {
+        ctx->world_infos[index].level_names.strings = (const char**)arena_alloc(arena, sizeof(const char*) * MAX_LEVELS);
+        ctx->world_infos[index].level_names.count = 0;
+    }
+    
     CACHED_TEXTURES = hashmap_make(arena, sizeof(AppTexture), 512);
     world = hashmap_make(arena, sizeof(Level), directory_count);
     
@@ -2115,6 +2173,8 @@ Hashmap* load_assets(Arena *arena)
         u64 directory_path_length = strlen(directory_path);
         s32 relative_directory_length = (s32)directory_path_length;
         s32 file_name_length = (s32)strlen(file_name);
+        
+        Game game_type = Game_None;
         
         {
             const char *directory_walker = directory_path + directory_path_length;
@@ -2129,40 +2189,90 @@ Hashmap* load_assets(Arena *arena)
             }
             relative_directory = directory_walker;
             relative_directory_length = (s32)strlen(relative_directory);
+            
+            const char *parent_directory = nullptr;
+            s32 parent_directory_length = 0;
+            
+            // trim off next directory delimiter
+            directory_walker--;
+            while (directory_walker > directory_path) 
+            {
+                if (*directory_walker == '\\' || *directory_walker == '//')
+                {
+                    directory_walker--;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            
+            directory_walker = directory_walker - 2;
+            const char *last_directory = directory_walker;
+            
+            b32 find_parent = !strstr(directory_walker, "data");
+            
+            while (find_parent)
+            {
+                while (directory_walker > directory_path) 
+                {
+                    if (*directory_walker == '\\' || *directory_walker == '//')
+                    {
+                        directory_walker++;
+                        break;
+                    }
+                    directory_walker--;
+                }
+                
+                find_parent = !strstr(directory_walker, "data");
+                
+                if (!find_parent)
+                {
+                    parent_directory = directory_walker;
+                    parent_directory_length = (s32)(last_directory - parent_directory);
+                }
+                else
+                {
+                    // trim off next directory delimiter
+                    directory_walker--;
+                    while (directory_walker > directory_path) 
+                    {
+                        if (*directory_walker == '\\' || *directory_walker == '//')
+                        {
+                            directory_walker--;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+                
+                last_directory = directory_walker;
+            }
+            
+            if (parent_directory)
+            {
+                for (s32 game_index = 0; game_index < Game_Count; ++game_index)
+                {
+                    if (strstr(parent_directory, s_game_short_names[game_index]))
+                    {
+                        game_type = (Game)game_index;
+                        break;
+                    }
+                }
+            }
         }
         
-        const char *current_relative_directory = directory_get_relative();
-        if (!STRCMP(relative_directory, current_relative_directory))
+        Level *level = (Level*)hashmap_get(world, relative_directory);
+        if (!level)
         {
-            if (WORK_PATH_DEPTH > 1)
-            {
-                Level level = {};
-                level.regions = regions;
-                level.objects = objects;
-                level.regions_count = regions_count;
-                level.objects_count = objects_count;
-                
-                if (regions_count == 0 && !regions)
-                {
-                    level.regions = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
-                }
-                if (objects_count == 0 && !objects)
-                {
-                    level.objects = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
-                }
-                
-                hashmap_set(world, current_relative_directory, &level);
-                
-                printf("Level Loaded - %s\n", current_relative_directory);
-                printf("\tRegions - %d\n", regions_count);
-                printf("\tObjects - %d\n", objects_count);
-                regions = nullptr;
-                objects = nullptr;
-                regions_count = 0;
-                objects_count = 0;
-                directory_pop();
-            }
-            directory_push(relative_directory);
+            Level new_level = {};
+            new_level.game = game_type;
+            new_level.name = string_table_intern(relative_directory);
+            new_level.regions = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
+            new_level.objects = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
+            level = (Level*)hashmap_set(world, relative_directory, &new_level);
         }
         
         u64 file_length = 0;
@@ -2170,19 +2280,21 @@ Hashmap* load_assets(Arena *arena)
         
         if (s32 interest_count = parse_file_get_block_count(file_data, file_length))
         {
-            PointOfInterest *interests = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
+            PointOfInterest *interests = nullptr;
+            s32 *loaded_interest_count = nullptr;
             
             if (STRCMP(file_name, "regions.txt"))
             {
-                regions = interests;
-                regions_count = interest_count;
+                interests = level->regions;
+                loaded_interest_count = &level->regions_count;
             }
             else if (STRCMP(file_name, "interests.txt"))
             {
-                objects = interests;
-                objects_count = interest_count;
+                interests = level->objects;
+                loaded_interest_count = &level->objects_count;
             }
             
+            if (loaded_interest_count && interests)
             {
                 PointOfInterestCollection collection = {};
                 collection.items = interests;
@@ -2190,43 +2302,20 @@ Hashmap* load_assets(Arena *arena)
                 collection.capacity = interest_count;
                 //point_of_interest_parse(interests, interest_count, file_data, file_length);
                 parse_file(file_data, file_length, handle_point_of_interest_block, &collection);
+                
+                *loaded_interest_count = collection.count;
             }
         }
         
         free(file_data);
     }
     
-    ASSERT(WORK_PATH_DEPTH <= 2);
-    if (WORK_PATH_DEPTH)
-    {
-        const char *relative_directory = directory_get_relative();
-        Level level = {};
-        level.regions = regions;
-        level.objects = objects;
-        level.regions_count = regions_count;
-        level.objects_count = objects_count;
-        
-        if (regions_count == 0 && !regions)
-        {
-            level.regions = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
-        }
-        if (objects_count == 0 && !objects)
-        {
-            level.objects = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
-        }
-        
-        printf("Level Loaded - %s\n", relative_directory);
-        printf("\tRegions - %d\n", regions_count);
-        printf("\tObjects - %d\n", objects_count);
-        hashmap_set(world, relative_directory, &level);
-        
-        directory_pop();
-    }
-    
     UnloadDirectoryFiles(file_path_list);
     
     create_default_textures();
     
+    directory_init();
+    directory_push("data");
     directory_push("images");
     FilePathList image_paths = LoadDirectoryFiles(WORK_PATH.str);
     for (u32 index = 0; index < image_paths.count; ++index)
@@ -2293,15 +2382,24 @@ Hashmap* load_assets(Arena *arena)
                 }
             }
         }
+        
+        StringCollection *level_names = &ctx->world_infos[level->game].level_names;
+        if (level_names->count < MAX_LEVELS)
+        {
+            level_names->strings[level_names->count++] = level->name;
+        }
     }
     
     directory_pop();
     ASSERT(STRCMP(WORK_PATH.str, GetApplicationDirectory()) && WORK_PATH_DEPTH == 0);
     
-    return world;
+    LOAD_ASSETS_CLEANUP:
+    ctx->world = world;
+    
+    return world != nullptr;
 }
 
-Hashmap* load_default_assets(Arena *arena)
+b32 load_default_assets(Arena *arena, VisualizerCtx *ctx)
 {
     ASSERT(arena);
     if (CACHED_TEXTURES)
@@ -2315,22 +2413,31 @@ Hashmap* load_default_assets(Arena *arena)
     }
     
     arena_clear(arena);
+    for (s32 index = 0; index < Game_Count; ++index)
+    {
+        ctx->world_infos[index].level_names.strings = (const char**)arena_alloc(arena, sizeof(const char*) * MAX_LEVELS);
+        ctx->world_infos[index].level_names.count = 0;
+    }
+    
     CACHED_TEXTURES = hashmap_make(arena, sizeof(AppTexture), 512);
     Hashmap *world = hashmap_make(arena, sizeof(Level), 32);
     
     create_default_textures();
+    ctx->world = world;
     
-    return world;
+    return world != nullptr;
 }
 
-Aabbf calculate_max_world_region(Hashmap *world)
+Aabbf calculate_max_world_region(VisualizerCtx *ctx)
 {
+    StringCollection *level_names = get_level_names(ctx);
+    Hashmap *world = ctx->world;
     Aabbf region = {};
     if (world)
     {
-        for (s32 level_index = 0; level_index < world->count; ++level_index)
+        for (s32 level_index = 0; level_index < level_names->count; ++level_index)
         {
-            Level *level = (Level*)world->values[level_index];
+            Level *level = (Level*)hashmap_get(world, level_names->strings[level_index]);
             level->bounds = {};
             if (level->regions_count)
             {
