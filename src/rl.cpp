@@ -220,9 +220,18 @@ void do_world_filter(VisualizerCtx *ctx, b32 add_draw_region)
             ImGui::SameLine();
             if (ImGui::Button("Focus"))
             {
-                V3f size = aabbf_size(ctx->filter_world_region);
-                camera.target.x = ctx->filter_world_region.min.x + size.x * 0.5f;
-                camera.target.y = ctx->filter_world_region.min.z + size.z * 0.5f;
+                if (ctx->selected_record_index < ctx->recorded_world_positions.count)
+                {
+                    V3f target = ctx->recorded_world_positions.points[ctx->selected_record_index];
+                    camera.target.x = target.x;
+                    camera.target.y = target.z;
+                }
+                else
+                {
+                    V3f size = aabbf_size(ctx->filter_world_region);
+                    camera.target.x = ctx->filter_world_region.min.x + size.x * 0.5f;
+                    camera.target.y = ctx->filter_world_region.min.z + size.z * 0.5f;
+                }
             }
             ImGui::SameLine();
             ImGui::Checkbox("Draw Scan Samples", (bool*)&ctx->map_draw_scan_samples);
@@ -1333,10 +1342,24 @@ void do_map_window(VisualizerCtx *ctx)
                     string_printf(&clipboard_text, "%.2f, %.2f, %.2f", ctx->position.x, ctx->position.y, ctx->position.z);
                     SetClipboardText(clipboard_text.str);
                 }
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                {
+                    camera.target.x = ctx->position.x;
+                    camera.target.y = ctx->position.z;
+                }
             }
-            ImGui::SetItemTooltip("Ctrl + C to copy coordinates to clipboard");
+            ImGui::SetItemTooltip("Ctrl + C to copy coordinates to clipboard\nRight Click to focus");
             ImGui::InputFloat3("Sample Point", (float*)&ctx->world_sample_point, "%.2f", ImGuiInputTextFlags_CharsDecimal);
-            ImGui::SetItemTooltip("Ctrl + Left click to pick a sample from map");
+            if (ImGui::IsItemHovered())
+            {
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                {
+                    camera.target.x = ctx->world_sample_point.x;
+                    camera.target.y = ctx->world_sample_point.z;
+                }
+            }
+            ImGui::SetItemTooltip("Ctrl + Left click to pick a sample from map\nRight Click to focus");
+            
             ImGui::PopItemWidth();
             if (ImGui::Button("Calculate World Bounds")) 
             {
