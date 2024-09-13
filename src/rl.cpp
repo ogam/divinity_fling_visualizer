@@ -435,7 +435,7 @@ b32 do_window(VisualizerCtx *ctx)
         {
             if (load_assets(&ctx->arena, ctx))
             {
-                ctx->max_world_region = calculate_max_world_region(ctx->world);
+                ctx->max_world_region = calculate_max_world_region(ctx);
             }
             else
             {
@@ -1081,20 +1081,26 @@ void do_map_window(VisualizerCtx *ctx)
         {
             if (ctx->world)
             {
-                for (s32 index = 0; index < ctx->world->count; ++index)
+                StringCollection *level_names = get_level_names(ctx);
+                
+                for (s32 index = 0; index < level_names->count; ++index)
                 {
-                    const char *level_name = (const char*)ctx->world->keys[index];
-                    if (ImGui::BeginTabItem(level_name))
+                    const char *level_name = (const char*)level_names->strings[index];
+                    current_level = (Level*)hashmap_get(ctx->world, level_name);
+                    
+                    if (current_level)
                     {
-                        current_level = (Level*)ctx->world->values[index];
-                        current_level_name = level_name;
-                        if (current_level != ctx->previous_tab_level)
+                        if (ImGui::BeginTabItem(level_name))
                         {
-                            ctx->current_drawing_aabbf = nullptr;
+                            current_level_name = level_name;
+                            if (current_level != ctx->previous_tab_level)
+                            {
+                                ctx->current_drawing_aabbf = nullptr;
+                            }
+                            ctx->current_tab_level = current_level;
+                            ctx->previous_tab_level = current_level;
+                            ImGui::EndTabItem();
                         }
-                        ctx->current_tab_level = current_level;
-                        ctx->previous_tab_level = current_level;
-                        ImGui::EndTabItem();
                     }
                 }
             }
@@ -1362,7 +1368,7 @@ void do_map_window(VisualizerCtx *ctx)
             ImGui::PopItemWidth();
             if (ImGui::Button("Calculate World Bounds")) 
             {
-                ctx->max_world_region = calculate_max_world_region(ctx->world);
+                ctx->max_world_region = calculate_max_world_region(ctx);
             }
             ImGui::SameLine();
             ImGui::Checkbox("Use World Bounds", (bool*)&ctx->use_world_bounds);
@@ -1946,8 +1952,9 @@ b32 do_about_window(VisualizerCtx *ctx)
     string_printf(&id_buffer, "About v%d.%d.%d##about_window", APP_VERSION_MAJOR, APP_VERSION_MINOR, APP_VERSION_BUILD);
     ImGui::Begin(id_buffer.str, (bool*)&show);
     {
-        ImGui::Text("Tool used for BG3 to find where you place your item fling positions in the world");
-        ImGui::Text("Currently only supports bg3 after v4.1.1.3905231, this is a minor patch after patch 4");
+        ImGui::Text("Tool used for larian games (DOS2/BG3) to find where you place your item fling positions in the world");
+        ImGui::Text("dos2 - definitive edition");
+        ImGui::Text("bg3 - supported after v4.1.1.3905231, this is a minor patch after patch 4");
         ImGui::Text("Created by Ogam");
         if (ImGui::Button("CPRG Discord"))
         {
@@ -2094,10 +2101,6 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
 {
     directory_push("data");
     FilePathList file_path_list = LoadDirectoryFilesEx(WORK_PATH.str, ".txt", true);
-    PointOfInterest *regions = nullptr;
-    PointOfInterest *objects = nullptr;
-    s32 regions_count = 0;
-    s32 objects_count = 0;
     s32 directory_count = 0;
     Hashmap *world = nullptr;
     
@@ -2154,7 +2157,7 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
     arena_clear(arena);
     for (s32 index = 0; index < Game_Count; ++index)
     {
-        ctx->world_infos[index].level_names.strings = (const char**)arena_alloc(arena, sizeof(const char*) * 1024);
+        ctx->world_infos[index].level_names.strings = (const char**)arena_alloc(arena, sizeof(const char*) * MAX_LEVELS);
         ctx->world_infos[index].level_names.count = 0;
     }
     
@@ -2171,6 +2174,8 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
         s32 relative_directory_length = (s32)directory_path_length;
         s32 file_name_length = (s32)strlen(file_name);
         
+        Game game_type = Game_None;
+        
         {
             const char *directory_walker = directory_path + directory_path_length;
             while (directory_walker > directory_path) 
@@ -2184,40 +2189,90 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
             }
             relative_directory = directory_walker;
             relative_directory_length = (s32)strlen(relative_directory);
+            
+            const char *parent_directory = nullptr;
+            s32 parent_directory_length = 0;
+            
+            // trim off next directory delimiter
+            directory_walker--;
+            while (directory_walker > directory_path) 
+            {
+                if (*directory_walker == '\\' || *directory_walker == '//')
+                {
+                    directory_walker--;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            
+            directory_walker = directory_walker - 2;
+            const char *last_directory = directory_walker;
+            
+            b32 find_parent = !strstr(directory_walker, "data");
+            
+            while (find_parent)
+            {
+                while (directory_walker > directory_path) 
+                {
+                    if (*directory_walker == '\\' || *directory_walker == '//')
+                    {
+                        directory_walker++;
+                        break;
+                    }
+                    directory_walker--;
+                }
+                
+                find_parent = !strstr(directory_walker, "data");
+                
+                if (!find_parent)
+                {
+                    parent_directory = directory_walker;
+                    parent_directory_length = (s32)(last_directory - parent_directory);
+                }
+                else
+                {
+                    // trim off next directory delimiter
+                    directory_walker--;
+                    while (directory_walker > directory_path) 
+                    {
+                        if (*directory_walker == '\\' || *directory_walker == '//')
+                        {
+                            directory_walker--;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+                
+                last_directory = directory_walker;
+            }
+            
+            if (parent_directory)
+            {
+                for (s32 game_index = 0; game_index < Game_Count; ++game_index)
+                {
+                    if (strstr(parent_directory, s_game_short_names[game_index]))
+                    {
+                        game_type = (Game)game_index;
+                        break;
+                    }
+                }
+            }
         }
         
-        const char *current_relative_directory = directory_get_relative();
-        if (!STRCMP(relative_directory, current_relative_directory))
+        Level *level = (Level*)hashmap_get(world, relative_directory);
+        if (!level)
         {
-            if (WORK_PATH_DEPTH > 1)
-            {
-                Level level = {};
-                level.regions = regions;
-                level.objects = objects;
-                level.regions_count = regions_count;
-                level.objects_count = objects_count;
-                
-                if (regions_count == 0 && !regions)
-                {
-                    level.regions = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
-                }
-                if (objects_count == 0 && !objects)
-                {
-                    level.objects = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
-                }
-                
-                hashmap_set(world, current_relative_directory, &level);
-                
-                printf("Level Loaded - %s\n", current_relative_directory);
-                printf("\tRegions - %d\n", regions_count);
-                printf("\tObjects - %d\n", objects_count);
-                regions = nullptr;
-                objects = nullptr;
-                regions_count = 0;
-                objects_count = 0;
-                directory_pop();
-            }
-            directory_push(relative_directory);
+            Level new_level = {};
+            new_level.game = game_type;
+            new_level.name = string_table_intern(relative_directory);
+            new_level.regions = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
+            new_level.objects = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
+            level = (Level*)hashmap_set(world, relative_directory, &new_level);
         }
         
         u64 file_length = 0;
@@ -2225,19 +2280,21 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
         
         if (s32 interest_count = parse_file_get_block_count(file_data, file_length))
         {
-            PointOfInterest *interests = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
+            PointOfInterest *interests = nullptr;
+            s32 *loaded_interest_count = nullptr;
             
             if (STRCMP(file_name, "regions.txt"))
             {
-                regions = interests;
-                regions_count = interest_count;
+                interests = level->regions;
+                loaded_interest_count = &level->regions_count;
             }
             else if (STRCMP(file_name, "interests.txt"))
             {
-                objects = interests;
-                objects_count = interest_count;
+                interests = level->objects;
+                loaded_interest_count = &level->objects_count;
             }
             
+            if (loaded_interest_count && interests)
             {
                 PointOfInterestCollection collection = {};
                 collection.items = interests;
@@ -2245,43 +2302,20 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
                 collection.capacity = interest_count;
                 //point_of_interest_parse(interests, interest_count, file_data, file_length);
                 parse_file(file_data, file_length, handle_point_of_interest_block, &collection);
+                
+                *loaded_interest_count = collection.count;
             }
         }
         
         free(file_data);
     }
     
-    ASSERT(WORK_PATH_DEPTH <= 2);
-    if (WORK_PATH_DEPTH)
-    {
-        const char *relative_directory = directory_get_relative();
-        Level level = {};
-        level.regions = regions;
-        level.objects = objects;
-        level.regions_count = regions_count;
-        level.objects_count = objects_count;
-        
-        if (regions_count == 0 && !regions)
-        {
-            level.regions = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
-        }
-        if (objects_count == 0 && !objects)
-        {
-            level.objects = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
-        }
-        
-        printf("Level Loaded - %s\n", relative_directory);
-        printf("\tRegions - %d\n", regions_count);
-        printf("\tObjects - %d\n", objects_count);
-        hashmap_set(world, relative_directory, &level);
-        
-        directory_pop();
-    }
-    
     UnloadDirectoryFiles(file_path_list);
     
     create_default_textures();
     
+    directory_init();
+    directory_push("data");
     directory_push("images");
     FilePathList image_paths = LoadDirectoryFiles(WORK_PATH.str);
     for (u32 index = 0; index < image_paths.count; ++index)
@@ -2348,6 +2382,12 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
                 }
             }
         }
+        
+        StringCollection *level_names = &ctx->world_infos[level->game].level_names;
+        if (level_names->count < MAX_LEVELS)
+        {
+            level_names->strings[level_names->count++] = level->name;
+        }
     }
     
     directory_pop();
@@ -2375,7 +2415,7 @@ b32 load_default_assets(Arena *arena, VisualizerCtx *ctx)
     arena_clear(arena);
     for (s32 index = 0; index < Game_Count; ++index)
     {
-        ctx->world_infos[index].level_names.strings = (const char**)arena_alloc(arena, sizeof(const char*) * 1024);
+        ctx->world_infos[index].level_names.strings = (const char**)arena_alloc(arena, sizeof(const char*) * MAX_LEVELS);
         ctx->world_infos[index].level_names.count = 0;
     }
     
@@ -2388,14 +2428,16 @@ b32 load_default_assets(Arena *arena, VisualizerCtx *ctx)
     return world != nullptr;
 }
 
-Aabbf calculate_max_world_region(Hashmap *world)
+Aabbf calculate_max_world_region(VisualizerCtx *ctx)
 {
+    StringCollection *level_names = get_level_names(ctx);
+    Hashmap *world = ctx->world;
     Aabbf region = {};
     if (world)
     {
-        for (s32 level_index = 0; level_index < world->count; ++level_index)
+        for (s32 level_index = 0; level_index < level_names->count; ++level_index)
         {
-            Level *level = (Level*)world->values[level_index];
+            Level *level = (Level*)hashmap_get(world, level_names->strings[level_index]);
             level->bounds = {};
             if (level->regions_count)
             {

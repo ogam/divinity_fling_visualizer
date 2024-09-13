@@ -27,8 +27,10 @@
 
 //  @todo:  build.bat and increment on every build
 #define APP_VERSION_MAJOR 0
-#define APP_VERSION_MINOR 0
-#define APP_VERSION_BUILD 5
+#define APP_VERSION_MINOR 1
+#define APP_VERSION_BUILD 0
+
+#define MAX_LEVELS 1024
 
 typedef unsigned char u8;
 typedef unsigned short u16;
@@ -368,6 +370,8 @@ struct PointOfInterestCollection
 
 struct Level
 {
+    Game game;
+    const char *name;
     PointOfInterest *regions;
     PointOfInterest *objects;
     s32 regions_count;
@@ -1360,4 +1364,16 @@ static inline void dump_point_of_interests_to_file(const char *path, PointOfInte
         
         fclose(file_handle);
     }
+}
+
+static inline StringCollection *get_level_names(VisualizerCtx *ctx)
+{
+    Game game_world_to_display = ctx->game_world_to_display;
+    if (game_world_to_display == Game_None)
+    {
+        game_world_to_display = ctx->game_type;
+    }
+    
+    StringCollection *level_names = &ctx->world_infos[game_world_to_display].level_names;
+    return level_names;
 }

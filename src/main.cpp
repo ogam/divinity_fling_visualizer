@@ -1441,7 +1441,7 @@ int main(void)
         load_default_assets(&ctx.arena, &ctx);
     }
     
-    ctx.max_world_region = calculate_max_world_region(ctx.world);
+    ctx.max_world_region = calculate_max_world_region(&ctx);
     ctx.map_texture = renderer_render_texture_make();
     
     b32 should_quit = false;
