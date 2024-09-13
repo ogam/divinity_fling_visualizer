@@ -1827,24 +1827,24 @@ b32 do_settings_window(VisualizerCtx *ctx)
         String input_buffer;
         {
             ImGui::Text("Game World");
-            if (ImGui::RadioButton("Auto", ctx->game_world_to_display == Game_None))
+            for (s32 index = 0; index < Game_Count; ++index)
             {
-                ctx->game_world_to_display = Game_None;
-            }
-            ImGui::SameLine();
-            if (ImGui::RadioButton(s_game_short_names[Game_DOS1_EE], ctx->game_world_to_display == Game_DOS1_EE))
-            {
-                ctx->game_world_to_display = Game_DOS1_EE;
-            }
-            ImGui::SameLine();
-            if (ImGui::RadioButton(s_game_short_names[Game_DOS2_DE], ctx->game_world_to_display == Game_DOS2_DE))
-            {
-                ctx->game_world_to_display = Game_DOS2_DE;
-            }
-            ImGui::SameLine();
-            if (ImGui::RadioButton(s_game_short_names[Game_BG3], ctx->game_world_to_display == Game_BG3))
-            {
-                ctx->game_world_to_display = Game_BG3;
+                b32 is_active = ctx->game_world_to_display == index;
+                const char *radio_button_name = s_game_short_names[index];
+                if (index == Game_None)
+                {
+                    radio_button_name = "Auto";
+                }
+                
+                if (ImGui::RadioButton(radio_button_name, is_active))
+                {
+                    ctx->game_world_to_display = (Game)index;
+                }
+                
+                if (index != Game_Count - 1)
+                {
+                    ImGui::SameLine();
+                }
             }
         }
         {

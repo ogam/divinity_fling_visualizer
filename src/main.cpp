@@ -107,17 +107,13 @@ void handle_address_block(const char *block_start, const char *block_end, void* 
             value.str[value.length] = '\0';
             
             const char *game_name = string_table_intern(value.str);
-            if (string_table_intern(s_game_short_names[Game_BG3]) == game_name)
+            for (s32 game_index = 0; game_index < Game_Count; ++game_index)
             {
-                current->game = Game_BG3;
-            }
-            else if (string_table_intern(s_game_short_names[Game_DOS2_DE]) == game_name)
-            {
-                current->game = Game_DOS2_DE;
-            }
-            else if (string_table_intern(s_game_short_names[Game_DOS1_EE]) == game_name)
-            {
-                current->game = Game_DOS1_EE;
+                if (string_table_intern(s_game_short_names[game_index]) == game_name)
+                {
+                    current->game = (Game)game_index;
+                    break;
+                }
             }
         }
         else if (interned_type == string_table_intern("platform"))
