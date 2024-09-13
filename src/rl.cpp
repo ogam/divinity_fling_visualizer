@@ -433,11 +433,7 @@ b32 do_window(VisualizerCtx *ctx)
         }
         if (ImGui::MenuItem("Load Assets"))
         {
-            if (load_assets(&ctx->arena, ctx))
-            {
-                ctx->max_world_region = calculate_max_world_region(ctx);
-            }
-            else
+            if (!load_assets(&ctx->arena, ctx))
             {
                 TraceLog(LOG_ERROR, "Failed to load assets!");
             }
@@ -477,6 +473,7 @@ b32 do_window(VisualizerCtx *ctx)
         }
         if (ctx->window_type & WindowType_Map)
         {
+            ctx->max_world_region = calculate_max_world_region(ctx);
             do_map_window(ctx);
         }
     }
@@ -1086,13 +1083,13 @@ void do_map_window(VisualizerCtx *ctx)
                 for (s32 index = 0; index < level_names->count; ++index)
                 {
                     const char *level_name = (const char*)level_names->strings[index];
-                    current_level = (Level*)hashmap_get(ctx->world, level_name);
-                    
-                    if (current_level)
+                    Level *level = (Level*)hashmap_get(ctx->world, level_name);
+                    if (level)
                     {
                         if (ImGui::BeginTabItem(level_name))
                         {
                             current_level_name = level_name;
+                            current_level = level;
                             if (current_level != ctx->previous_tab_level)
                             {
                                 ctx->current_drawing_aabbf = nullptr;
