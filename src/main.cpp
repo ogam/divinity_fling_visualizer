@@ -31,7 +31,7 @@ void global_button_update(GlobalButton *button);
 
 Game get_game_type(const char *window_title);
 StringCollection get_game_process_names(Game game);
-AddressCollection get_game_position_address_offsets(Game game, const char *version);
+AddressCollection get_game_node_position_address_offsets(Game game, const char *version);
 AddressCollection get_game_level_address_offsets(Game game, const char *version);
 
 void co_bg3_do_set_world_position(mco_coro *co);
@@ -629,7 +629,7 @@ StringCollection get_game_process_names(Game game)
     return collection;
 }
 
-AddressCollection get_game_position_address_offsets(Game game, const char *version)
+AddressCollection get_game_node_position_address_offsets(Game game, const char *version)
 {
     AddressCollection collection = {};
     
@@ -868,7 +868,7 @@ void co_do_scan_regions(mco_coro *co)
     co_utility_do_wiggle(co, ctx->wiggle_amount, ctx->wiggle_distance);
     co_utility_close_inventory(co, inventory_vk, inventory_sc);
     
-    V3f previous_position = ctx->position;
+    V3f previous_node_position = ctx->node_position;
     Aabbi screen_bounds = ctx->game_screen_bounds;
     v2i_collection_clear(&ctx->recorded_screen_positions);
     v3f_collection_clear(&ctx->recorded_world_positions);
@@ -891,13 +891,13 @@ void co_do_scan_regions(mco_coro *co)
                     V2i screen_position = {x, y};
                     push_mouse_move_absolute(screen_position);
                     mco_yield(co);
-                    V3f current_position = ctx->position;
-                    V3f dp = v3f_sub(current_position, previous_position);
-                    if (!f32_is_zero(v3f_len_sq(dp)) && aabbf_filtered(filter_world_region, current_position, filter_type, false))
+                    V3f current_node_position = ctx->node_position;
+                    V3f dp = v3f_sub(current_node_position, previous_node_position);
+                    if (!f32_is_zero(v3f_len_sq(dp)) && aabbf_filtered(filter_world_region, current_node_position, filter_type, false))
                     {
                         v2i_collection_push(&ctx->recorded_screen_positions, ctx->game_screen_position);
-                        v3f_collection_push(&ctx->recorded_world_positions, current_position);
-                        previous_position = current_position;
+                        v3f_collection_push(&ctx->recorded_world_positions, current_node_position);
+                        previous_node_position = current_node_position;
                         goto EXIT_SCAN;
                     }
                 }
@@ -921,13 +921,13 @@ void co_do_scan_regions(mco_coro *co)
                     V2i screen_position = {x, y};
                     push_mouse_move_absolute(screen_position);
                     mco_yield(co);
-                    V3f current_position = ctx->position;
-                    V3f dp = v3f_sub(current_position, previous_position);
+                    V3f current_node_position = ctx->node_position;
+                    V3f dp = v3f_sub(current_node_position, previous_node_position);
                     if (!f32_is_zero(v3f_len_sq(dp)))
                     {
                         v2i_collection_push(&ctx->recorded_screen_positions, ctx->game_screen_position);
-                        v3f_collection_push(&ctx->recorded_world_positions, current_position);
-                        previous_position = current_position;
+                        v3f_collection_push(&ctx->recorded_world_positions, current_node_position);
+                        previous_node_position = current_node_position;
                     }
                 }
             }
@@ -1013,10 +1013,10 @@ b32 scan_memory_addresses()
         return false;
     }
     
-    AddressCollection position_address_collection = get_game_position_address_offsets(ctx.game_type, version);
+    AddressCollection node_position_address_collection = get_game_node_position_address_offsets(ctx.game_type, version);
     AddressCollection level_address_collection = get_game_level_address_offsets(ctx.game_type, version);
     
-    if (!position_address_collection.count && !level_address_collection.count)
+    if (!node_position_address_collection.count && !level_address_collection.count)
     {
         process_signature_scanner_begin();
         SignatureInfo *signature = nullptr;
@@ -1060,14 +1060,14 @@ b32 scan_memory_addresses()
                 
                 ctx.address_version_collection.count++;
                 
-                position_address_collection.addresses = new_address_version_info->node_addresses;
-                position_address_collection.count = new_address_version_info->node_count;
+                node_position_address_collection.addresses = new_address_version_info->node_addresses;
+                node_position_address_collection.count = new_address_version_info->node_count;
                 
                 level_address_collection.addresses = new_address_version_info->level_addresses;
                 level_address_collection.count = new_address_version_info->level_count;
                 
                 printf("Signature Scan successful\n");
-                String node_offset_str = string_from_address_offsets(position_address_collection.addresses, position_address_collection.count);
+                String node_offset_str = string_from_address_offsets(node_position_address_collection.addresses, node_position_address_collection.count);
                 String level_offset_str = string_from_address_offsets(level_address_collection.addresses, level_address_collection.count);
                 char output_buffer[1024];
                 u64 output_buffer_length = snprintf(output_buffer, sizeof(output_buffer), 
@@ -1103,11 +1103,11 @@ b32 scan_memory_addresses()
         }
         process_signature_scanner_end();
     }
-    if (position_address_collection.count)
+    if (node_position_address_collection.count)
     {
-        if (process_scan_memory_ex(position_address_collection.addresses, position_address_collection.count - 1, &ctx.position_address, sizeof(u64)))
+        if (process_scan_memory_ex(node_position_address_collection.addresses, node_position_address_collection.count - 1, &ctx.node_position_address, sizeof(u64)))
         {
-            ctx.position_address += position_address_collection.addresses[position_address_collection.count - 1];
+            ctx.node_position_address += node_position_address_collection.addresses[node_position_address_collection.count - 1];
             memory_scan_failed = false;
         }
     }
@@ -1163,7 +1163,7 @@ void load_settings()
 
 void game_actions()
 {
-    static u64 previous_position_address = 0;
+    static u64 previous_node_position_address = 0;
     if (ctx.force_rescan_memory)
     {
         if (ctx.memory_addresses_dirty_counter == 0)
@@ -1183,17 +1183,26 @@ void game_actions()
     
     {
         b32 memory_scan_failed = false;
-        if (!process_scan_memory(ctx.position_address, &ctx.position, sizeof(V3f)))
+        if (!process_scan_memory(ctx.node_position_address, &ctx.node_position, sizeof(V3f)))
         {
             memory_scan_failed = true;
         }
         //  @bug:  address seems to break at some point after doing some code injection to use console commands to teleport
         //         around the world, have not seen this get fired off for awhile so unsure. still needs testing to see what
         //         the actual cause was
+        //  @note:  some pointers will get stale after some point so need to do a validation check if it's either out of bounds
+        //          other times the value might be near zero for all floats for vec3 (example dos2 screen to world cursor position)
+        
         // validation check if position is in bounds, aabb size should be configurable
-        if (ctx.position.x < -10000.0f || ctx.position.x > 10000.0f || 
-            ctx.position.y < -10000.0f || ctx.position.y > 10000.0f ||
-            ctx.position.z < -10000.0f || ctx.position.z > 10000.0f)
+        if (ctx.node_position.x < -10000.0f || ctx.node_position.x > 10000.0f || 
+            ctx.node_position.y < -10000.0f || ctx.node_position.y > 10000.0f ||
+            ctx.node_position.z < -10000.0f || ctx.node_position.z > 10000.0f)
+        {
+            memory_scan_failed = true;
+        }
+        
+        // validation check if position is near zero, all valid values should be something reasonable (0.1f+) and not be extremely tiny
+        if (is_near_zero(ctx.node_position.x) && is_near_zero(ctx.node_position.y) && is_near_zero(ctx.node_position.z))
         {
             memory_scan_failed = true;
         }
@@ -1309,7 +1318,7 @@ void game_actions()
         }
     }
     
-    previous_position_address = ctx.position_address;
+    previous_node_position_address = ctx.node_position_address;
 }
 
 void ui_actions()

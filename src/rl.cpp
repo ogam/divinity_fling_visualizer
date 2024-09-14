@@ -441,8 +441,8 @@ b32 do_window(VisualizerCtx *ctx)
         if (ImGui::MenuItem("Force Rescan"))
         {
             ctx->force_rescan_memory = true;
-            ImGui::SetItemTooltip("If level or world position becomes stale (no longer updating from game), forcefully rescan these addresses");
         }
+        ImGui::SetItemTooltip("If level or world position becomes stale (no longer updating from game), forcefully rescan these addresses");
         if (ImGui::MenuItem("Settings"))
         {
             ctx->window_type ^= WindowType_Settings;
@@ -1036,13 +1036,13 @@ void do_fling_window(VisualizerCtx *ctx)
     {
         ImGui::Text("Level: %s", ctx->level_name.str);
         ImGui::Text("Resolution: %d x %d", game_screen_size.x, game_screen_size.y);
-        ImGui::Text("World Position: %.2f, %.2f, %.2f", ctx->position.x, ctx->position.y, ctx->position.z);
+        ImGui::Text("Node Position: %.2f, %.2f, %.2f", ctx->node_position.x, ctx->node_position.y, ctx->node_position.z);
         if (ImGui::IsItemHovered())
         {
             if (ImGui::IsKeyChordPressed(ImGuiModFlags_Ctrl | ImGuiKey_C))
             {
                 String clipboard_text;
-                string_printf(&clipboard_text, "%.2f, %.2f, %.2f", ctx->position.x, ctx->position.y, ctx->position.z);
+                string_printf(&clipboard_text, "%.2f, %.2f, %.2f", ctx->node_position.x, ctx->node_position.y, ctx->node_position.z);
                 SetClipboardText(clipboard_text.str);
             }
         }
@@ -1299,9 +1299,9 @@ void do_map_window(VisualizerCtx *ctx)
                         DrawCircleV({position.x, position.z}, raylib_circle_radius, *(Color*)&circle_color);
                     }
                     
-                    if (aabbf_contains(*world_bounds, ctx->position))
+                    if (aabbf_contains(*world_bounds, ctx->node_position))
                     {
-                        V3f position = ctx->position;
+                        V3f position = ctx->node_position;
                         DrawCircleV({position.x, position.z}, raylib_circle_radius, *(Color*)&circle_color);
                     }
                     
@@ -1335,19 +1335,19 @@ void do_map_window(VisualizerCtx *ctx)
             ImGui::PushItemWidth(200.0f);
             ImGui::InputFloat3("World Min", &world_bounds->min.x, "%.2f", ImGuiInputTextFlags_CharsDecimal);
             ImGui::InputFloat3("World Max", &world_bounds->max.x, "%.2f", ImGuiInputTextFlags_CharsDecimal);
-            ImGui::Text("World Position: %.2f, %.2f, %.2f", ctx->position.x, ctx->position.y, ctx->position.z);
+            ImGui::Text("Node Position: %.2f, %.2f, %.2f", ctx->node_position.x, ctx->node_position.y, ctx->node_position.z);
             if (ImGui::IsItemHovered())
             {
                 if (ImGui::IsKeyChordPressed(ImGuiModFlags_Ctrl | ImGuiKey_C))
                 {
                     String clipboard_text;
-                    string_printf(&clipboard_text, "%.2f, %.2f, %.2f", ctx->position.x, ctx->position.y, ctx->position.z);
+                    string_printf(&clipboard_text, "%.2f, %.2f, %.2f", ctx->node_position.x, ctx->node_position.y, ctx->node_position.z);
                     SetClipboardText(clipboard_text.str);
                 }
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
                 {
-                    camera.target.x = ctx->position.x;
-                    camera.target.y = ctx->position.z;
+                    camera.target.x = ctx->node_position.x;
+                    camera.target.y = ctx->node_position.z;
                 }
             }
             ImGui::SetItemTooltip("Ctrl + C to copy coordinates to clipboard\nRight Click to focus");
@@ -1698,7 +1698,7 @@ b32 do_auto_map_window(VisualizerCtx *ctx)
             
             if (global_button_is_pressed(ctx->auto_map_buttons + sample_action))
             {
-                ctx->auto_map_sample_points[index] = ctx->position;
+                ctx->auto_map_sample_points[index] = ctx->node_position;
                 if (ImGui::IsMouseHoveringRect(image_min, image_max))
                 {
                     ctx->auto_map_image_state |= 1 << index;

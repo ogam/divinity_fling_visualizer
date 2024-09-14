@@ -453,7 +453,7 @@ struct VisualizerCtx
     f64 rebind_wait_time;
     
     s32 memory_addresses_dirty_counter;
-    u64 position_address;
+    u64 node_position_address;
     u64 level_name_address;
     
     WorldInfo world_infos[Game_Count];
@@ -461,7 +461,8 @@ struct VisualizerCtx
     // hooked game info
     V2i game_screen_position;
     Aabbi game_screen_bounds;
-    V3f position;
+    V3f node_position;
+    V3f screen_to_world_position;
     String level_name;
     
     Game game_type;
@@ -835,6 +836,15 @@ static inline String string_from_address_offsets(u64 *offsets, s32 count)
     return str;
 }
 
+static inline f32 is_near_zero(f32 value)
+{
+    if (value != 0.0f && fabsf(value) < 0.000001f)
+    {
+        return true;
+    }
+    return false;
+}
+
 static inline f32 clamp(f32 value, f32 min, f32 max)
 {
     value = MIN(value, max);
@@ -869,7 +879,6 @@ static inline V2i v2i_max(V2i a, V2i b)
     v.y = MAX(a.y, b.y);
     return v;
 }
-
 
 static inline V3f v3f_add(V3f a, V3f b)
 {
