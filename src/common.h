@@ -28,7 +28,7 @@
 //  @todo:  build.bat and increment on every build
 #define APP_VERSION_MAJOR 0
 #define APP_VERSION_MINOR 1
-#define APP_VERSION_BUILD 0
+#define APP_VERSION_BUILD 1
 
 #define MAX_LEVELS 1024
 
