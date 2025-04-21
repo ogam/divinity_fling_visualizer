@@ -18,6 +18,7 @@ struct ProcessInfo
     u64 base_address;
     u64 module_size;
     char file_name[1024];
+    char file_path[1024];
     char version[1024];
     char name[1024];
     
@@ -184,6 +185,8 @@ void process_info_init()
     process_info.is_dx11 = false;
     memset(process_info.version, 0, sizeof(process_info.version));
     process_info.is_gog = false;
+    memset(process_info.file_name, 0, sizeof(process_info.file_name));
+    memset(process_info.file_path, 0, sizeof(process_info.file_path));
     memset(process_info.name, 0, sizeof(process_info.name));
     process_info.process_id = 0;
     
@@ -275,12 +278,13 @@ b32 process_find(StringCollection *process_names)
                         CloseHandle(handle_module_snapshot);
                     }
                     
-                    GetModuleFileNameExA(handle_process, NULL, process_info.file_name, sizeof(process_info.file_name));
+                    snprintf(process_info.file_name, sizeof(process_info.file_name), pe32.szExeFile);
+                    GetModuleFileNameExA(handle_process, NULL, process_info.file_path, sizeof(process_info.file_path));
                     
                     DWORD file_info_handle;
                     DWORD file_info_output;
-                    file_info_output = GetFileVersionInfoSize(process_info.file_name, &file_info_handle);
-                    file_info_output = GetFileVersionInfo(process_info.file_name, file_info_handle, sizeof(buffer), buffer);
+                    file_info_output = GetFileVersionInfoSize(process_info.file_path, &file_info_handle);
+                    file_info_output = GetFileVersionInfo(process_info.file_path, file_info_handle, sizeof(buffer), buffer);
                     
                     u32 buffer_size;
                     VS_FIXEDFILEINFO *fixed_file_info = NULL;
@@ -637,6 +641,15 @@ const char *process_get_version(u32 *version_major, u32 *version_minor, u32 *ver
         *version_private = process_info.version_private;
     }
     return process_info.version;
+}
+
+const char *process_get_file_name()
+{
+    if (strlen(process_info.file_name))
+    {
+        return process_info.file_name;
+    }
+    return NULL;
 }
 
 // https://learn.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard

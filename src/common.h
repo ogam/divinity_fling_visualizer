@@ -27,11 +27,12 @@
 
 //  @todo:  build.bat and increment on every build
 #define APP_VERSION_MAJOR 0
-#define APP_VERSION_MINOR 1
-#define APP_VERSION_BUILD 2
+#define APP_VERSION_MINOR 2
+#define APP_VERSION_BUILD 0
 
 #define MAX_LEVELS 1024
 
+//  @todo:  remove u16 and s16
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned long u32;
@@ -102,31 +103,6 @@ enum
 const char **get_key_code_names();
 
 u64 hash_fnv1a(void *data, u64 size);
-
-//  @note:  when adding a new game, check if the title matches in get_game_type()
-//          add a short name for output for game_addresses.txt
-//          add a process name for process lookup
-//          update game enum
-static const char *s_game_short_names[] = {
-    "none",
-    "dos1",
-    "dos2",
-    "bg3",
-};
-
-enum Game
-{
-    Game_None,
-    // Divinity: Original Sin 1
-    // probably not needed since camera is free and easy to fling anywhere
-    Game_DOS1_EE,
-    // Divinity: Original Sin 2
-    // mod tools makes this one a bit redudnant, camera is a bit more restricted but might still be useful for low angle?
-    Game_DOS2_DE,
-    // Baldur's Gate 3
-    Game_BG3,
-    Game_Count
-};
 
 enum RebindType
 {
@@ -241,10 +217,12 @@ typedef struct Aabbf
     V3f max;
 } Aabbf;
 
+//  @todo:  if using arena, able to clear from arena. if using malloc then it needs to free
 struct StringCollection
 {
     const char **strings;
     s32 count;
+    s32 capacity;
 };
 
 struct V2iCollection
@@ -269,14 +247,14 @@ struct AddressCollection
 
 struct AddressVersionInfo
 {
-    Game game;
+    String process;
+    String game_name;
     b32 is_gog;
     const char *version;
     u64 node_addresses[32];
     u64 level_addresses[32];
     s32 node_count;
     s32 level_count;
-    s32 additional_info;
 };
 
 struct AddressVersionInfoCollection
@@ -296,7 +274,9 @@ struct Signature
 
 struct SignatureInfo
 {
-    Game game;
+    String process;
+    String game_name;
+    
     b32 is_gog;
     
     Signature node_signature;
@@ -314,7 +294,6 @@ struct SignatureInfo
     
     s32 node_address_offset_count;
     s32 level_address_offset_count;
-    s32 additional_info;
 };
 
 struct SignatureInfoCollection
@@ -370,7 +349,7 @@ struct PointOfInterestCollection
 
 struct Level
 {
-    Game game;
+    String game;
     const char *name;
     PointOfInterest *regions;
     PointOfInterest *objects;
@@ -456,7 +435,8 @@ struct VisualizerCtx
     u64 node_position_address;
     u64 level_name_address;
     
-    WorldInfo world_infos[Game_Count];
+    //  @todo:  don't hardcode this
+    WorldInfo world_infos[8];
     
     // hooked game info
     V2i game_screen_position;
@@ -465,9 +445,11 @@ struct VisualizerCtx
     V3f screen_to_world_position;
     String level_name;
     
-    Game game_type;
+    String process;
+    String game_name;
+    
     // none defaults to current active game_type
-    Game game_world_to_display;
+    String game_world_to_display;
     mco_coro *action_co;
     Action next_action;
     Action ui_next_action;
@@ -528,6 +510,8 @@ struct VisualizerCtx
     u8 *memory;
     u8 *memory_end;
     
+    StringCollection game_names;
+    StringCollection process_names;
     AddressVersionInfoCollection address_version_collection;
     SignatureInfoCollection signature_collection;
 };
@@ -824,6 +808,55 @@ static inline s32 string_printf(String *str, const char *fmt, ...)
     return str->length;
 }
 
+static inline void string_copy(String *dst, String *src)
+{
+    dst->length = snprintf(dst->str, sizeof(dst->str), src->str);
+}
+
+static inline b32 string_equ(String *a, String *b)
+{
+    return a->length == b->length && strcmp(a->str, b->str) == 0;
+}
+
+static inline void string_collection_init(StringCollection *collection, s32 capacity, Arena *arena)
+{
+    void *memory = NULL;
+    if (arena)
+    {
+        memory = arena_alloc(arena, sizeof(const char*) * capacity);
+    }
+    else
+    {
+        memory = calloc(capacity, sizeof(const char*));
+    }
+    
+    collection->strings = (const char**)memory;
+    collection->count = 0;
+    collection->capacity = capacity;
+}
+
+static inline void string_collection_add(StringCollection *collection, const char *string)
+{
+    if (collection->count < collection->capacity)
+    {
+        collection->strings[collection->count++] = string;
+    }
+}
+
+static inline b32 string_collection_contains(StringCollection *collection, const char *string)
+{
+    b32 has_string = false;
+    for (int index = 0; index < collection->count; ++index)
+    {
+        if (strcmp(collection->strings[index], string) == 0)
+        {
+            return true;
+            break;
+        }
+    }
+    return has_string;
+}
+
 static inline String string_from_address_offsets(u64 *offsets, s32 count)
 {
     String str;
@@ -831,6 +864,18 @@ static inline String string_from_address_offsets(u64 *offsets, s32 count)
     for (s32 index = 0; index < count; ++index)
     {
         string_printf(&str, "%s 0x%X,", str.str, offsets[index]);
+    }
+    string_pop(&str);
+    return str;
+}
+
+static inline String string_from_signature(u8 *bytes, s32 count)
+{
+    String str;
+    memset(&str, 0, sizeof(String));
+    for (s32 index = 0; index < count; ++index)
+    {
+        string_printf(&str, "%s 0x%X,", str.str, bytes[index]);
     }
     string_pop(&str);
     return str;
@@ -1377,12 +1422,21 @@ static inline void dump_point_of_interests_to_file(const char *path, PointOfInte
 
 static inline StringCollection *get_level_names(VisualizerCtx *ctx)
 {
-    Game game_world_to_display = ctx->game_world_to_display;
-    if (game_world_to_display == Game_None)
+    StringCollection *level_names = NULL;
+    String *game_world_to_display = &ctx->game_world_to_display;
+    if (game_world_to_display->length == 0)
     {
-        game_world_to_display = ctx->game_type;
+        game_world_to_display = &ctx->game_name;
     }
     
-    StringCollection *level_names = &ctx->world_infos[game_world_to_display].level_names;
+    for (s32 index = 0; index < ctx->game_names.count; ++index)
+    {
+        if (strcmp(game_world_to_display->str, ctx->game_names.strings[index]) == 0)
+        {
+            level_names = &ctx->world_infos[index].level_names;
+            break;
+        }
+    }
+    
     return level_names;
 }
