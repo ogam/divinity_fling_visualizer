@@ -1859,7 +1859,14 @@ b32 do_settings_window(VisualizerCtx *ctx)
                 
                 if (ImGui::RadioButton(radio_button_name, is_active))
                 {
-                    string_printf(&ctx->game_world_to_display, ctx->game_names.strings[index]);
+                    if (index < 0)
+                    {
+                        memset(&ctx->game_world_to_display, 0, sizeof(String));
+                    }
+                    else
+                    {
+                        string_printf(&ctx->game_world_to_display, ctx->game_names.strings[index]);
+                    }
                 }
                 
                 if (index != ctx->game_names.count - 1)
