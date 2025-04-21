@@ -869,6 +869,18 @@ static inline String string_from_address_offsets(u64 *offsets, s32 count)
     return str;
 }
 
+static inline String string_from_signature(u8 *bytes, s32 count)
+{
+    String str;
+    memset(&str, 0, sizeof(String));
+    for (s32 index = 0; index < count; ++index)
+    {
+        string_printf(&str, "%s 0x%X,", str.str, bytes[index]);
+    }
+    string_pop(&str);
+    return str;
+}
+
 static inline f32 is_near_zero(f32 value)
 {
     if (value != 0.0f && fabsf(value) < 0.000001f)

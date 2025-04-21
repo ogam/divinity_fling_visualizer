@@ -23,6 +23,9 @@ b32 process_try_to_attach();
 
 void global_button_update(GlobalButton *button);
 
+void address_dump(AddressVersionInfo *info);
+void signature_dump(SignatureInfo *info);
+
 AddressCollection get_game_node_position_address_offsets(const char *process, const char *version);
 AddressCollection get_game_level_address_offsets(const char *process, const char *version);
 const char* get_game_name(const char *process, const char *version);
@@ -174,9 +177,17 @@ void handle_address_block(const char *block_start, const char *block_end, void* 
         }
     }
     
-    if (current->node_count && current->level_count && current->version)
+    if (current->process.length && current->game_name.length)
     {
-        collection->count++;
+        if (current->node_count && current->level_count && current->version)
+        {
+            collection->count++;
+        }
+    }
+    else
+    {
+        printf("Failed to prase address block\n");
+        address_dump(current);
     }
 }
 
@@ -400,9 +411,17 @@ void handle_signature_block(const char *block_start, const char *block_end, void
     b32 has_search_lengths = current->node_signature.search_length && current->level_signature.search_length;
     b32 has_offsets = current->node_address_offset_count && current->level_address_offset_count;
     
-    if (has_signatures && has_search_lengths && has_offsets)
+    if (current->process.length && current->game_name.length)
     {
-        collection->count++;
+        if (has_signatures && has_search_lengths && has_offsets)
+        {
+            collection->count++;
+        }
+    }
+    else
+    {
+        printf("Failed to parse signature block\n");
+        signature_dump(current);
     }
 }
 
@@ -630,6 +649,80 @@ const char* get_game_name(const char *process, const char *version)
     }
     
     return game_name;
+}
+
+void address_dump(AddressVersionInfo *info)
+{
+    char output_buffer[1024];
+    
+    String node_offsets_str = string_from_address_offsets(info->node_addresses, info->node_count);
+    String level_offsets_str = string_from_address_offsets(info->level_addresses, info->level_count);
+    
+    u64 output_buffer_length = snprintf(output_buffer, sizeof(output_buffer), 
+                                        "{\n" \
+                                        "\tprocess = %s\n" \
+                                        "\tgame = %s\n" \
+                                        "\tplatform = %s\n" \
+                                        "\tversion = %s\n" \
+                                        "\tnode_offsets  = %s\n" \
+                                        "\tlevel_offsets = %s\n" \
+                                        "}\n",
+                                        info->process.str,
+                                        info->game_name.str,
+                                        info->is_gog ? "gog" : "steam",
+                                        info->version,
+                                        node_offsets_str.str,
+                                        level_offsets_str.str
+                                        );
+    
+    printf(output_buffer);
+}
+
+void signature_dump(SignatureInfo *info)
+{
+    char output_buffer[1024];
+    
+    String node_signature_str = string_from_signature(info->node_signature.signature, info->node_signature.byte_count);
+    String level_signature_str = string_from_signature(info->level_signature.signature, info->level_signature.byte_count);
+    String node_offsets_str = string_from_address_offsets(info->node_address_offsets, info->node_address_offset_count);
+    String level_offsets_str = string_from_address_offsets(info->level_address_offsets, info->level_address_offset_count);
+    
+    u64 output_buffer_length = snprintf(output_buffer, sizeof(output_buffer), 
+                                        "{\n" \
+                                        "\tprocess = %s\n" \
+                                        "\tgame = %s\n" \
+                                        "\tplatform = %s\n" \
+                                        "\tversion_major = %u\n" \
+                                        "\tversion_minor = %u\n" \
+                                        "\tversion_build = %u\n" \
+                                        "\tversion_private = %u\n" \
+                                        "\tnode_signature = %s\n" \
+                                        "\tlevel_signature = %s\n" \
+                                        "\tnode_search_start = %d\n" \
+                                        "\tnode_search_length = %d\n" \
+                                        "\tlevel_search_start = %d\n" \
+                                        "\tlevel_search_length = %d\n" \
+                                        "\tnode_offsets = %s\n" \
+                                        "\tlevel_offsets = %s\n" \
+                                        "}\n",
+                                        info->process.str,
+                                        info->game_name.str,
+                                        info->is_gog ? "gog" : "steam",
+                                        info->version_major,
+                                        info->version_minor,
+                                        info->version_build,
+                                        info->version_private,
+                                        node_signature_str.str,
+                                        level_signature_str.str,
+                                        info->node_signature.search_start,
+                                        info->node_signature.search_length,
+                                        info->level_signature.search_start,
+                                        info->level_signature.search_length,
+                                        node_offsets_str.str,
+                                        level_offsets_str.str
+                                        );
+    
+    printf(output_buffer);
 }
 
 AddressCollection get_game_node_position_address_offsets(const char *process, const char *version)
