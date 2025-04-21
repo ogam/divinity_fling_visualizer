@@ -31,6 +31,7 @@ void global_button_update(GlobalButton *button);
 
 Game get_game_type(const char *window_title);
 StringCollection get_game_process_names(Game game);
+const char* get_game_name(Game game, const char *version);
 AddressCollection get_game_node_position_address_offsets(Game game, const char *version);
 AddressCollection get_game_level_address_offsets(Game game, const char *version);
 
@@ -78,9 +79,6 @@ void handle_address_block(const char *block_start, const char *block_end, void* 
     
     while (walker < block_end)
     {
-        b32 is_using_radius = false;
-        f32 radius = 0;
-        
         const char *line_walker = util_string_skip_special_characters(walker);
         
         s32 line_length = util_string_line_length(walker);
@@ -107,6 +105,7 @@ void handle_address_block(const char *block_start, const char *block_end, void* 
             value.str[value.length] = '\0';
             
             const char *game_name = string_table_intern(value.str);
+            string_printf(&current->game_name, game_name);
             for (s32 game_index = 0; game_index < Game_Count; ++game_index)
             {
                 if (string_table_intern(s_game_short_names[game_index]) == game_name)
@@ -217,9 +216,6 @@ void handle_signature_block(const char *block_start, const char *block_end, void
     
     while (walker < block_end)
     {
-        b32 is_using_radius = false;
-        f32 radius = 0;
-        
         const char *line_walker = util_string_skip_special_characters(walker);
         
         s32 line_length = util_string_line_length(walker);
@@ -246,6 +242,8 @@ void handle_signature_block(const char *block_start, const char *block_end, void
             value.str[value.length] = '\0';
             
             const char *game_name = string_table_intern(value.str);
+            string_printf(&current->game_name, game_name);
+            
             if (string_table_intern("bg3") == game_name)
             {
                 current->game = Game_BG3;
@@ -627,6 +625,56 @@ StringCollection get_game_process_names(Game game)
     ASSERT(collection.strings && collection.count);
     
     return collection;
+}
+
+const char* get_game_name(Game game, const char *version)
+{
+    const char *game_name = NULL;
+    
+    const char *interned_version = string_table_intern(version);
+    b32 is_process_gog = process_is_gog();
+    b32 is_dx11 = process_is_dx11();
+    
+    if (game == Game_BG3)
+    {
+        for (s32 index = 0; index < ctx.address_version_collection.count; ++index)
+        {
+            AddressVersionInfo *address_version_info = ctx.address_version_collection.items + index;
+            b32 is_same_game = address_version_info->game == game;
+            b32 is_same_version = address_version_info->version == interned_version;
+            b32 is_same_store_platform = address_version_info->is_gog == is_process_gog;
+            b32 is_same_graphics_api = address_version_info->additional_info == is_dx11;
+            
+            if (is_same_game && 
+                is_same_version && 
+                is_same_store_platform &&
+                is_same_graphics_api)
+            {
+                game_name = address_version_info->game_name.str;
+                break;
+            }
+        }
+    }
+    else
+    {
+        for (s32 index = 0; index < ctx.address_version_collection.count; ++index)
+        {
+            AddressVersionInfo *address_version_info = ctx.address_version_collection.items + index;
+            b32 is_same_game = address_version_info->game == game;
+            b32 is_same_version = address_version_info->version == interned_version;
+            b32 is_same_store_platform = address_version_info->is_gog == is_process_gog;
+            
+            if (is_same_game && 
+                is_same_version && 
+                is_same_store_platform)
+            {
+                game_name = address_version_info->game_name.str;
+                break;
+            }
+        }
+    }
+    
+    return game_name;
 }
 
 AddressCollection get_game_node_position_address_offsets(Game game, const char *version)
@@ -1046,6 +1094,12 @@ b32 scan_memory_addresses()
             u64 level_address_offset = process_signature_scan(&signature->level_signature);
             if (node_address_offset && level_address_offset)
             {
+                if (ctx.address_version_collection.count >= ctx.address_version_collection.capacity)
+                {
+                    ctx.address_version_collection.capacity = ctx.address_version_collection.capacity == 0 ? 128 : ctx.address_version_collection.capacity * 2;
+                    ctx.address_version_collection.items = (AddressVersionInfo*) realloc(ctx.address_version_collection.items, sizeof(AddressVersionInfo) * ctx.address_version_collection.capacity);
+                }
+                
                 AddressVersionInfo *new_address_version_info = ctx.address_version_collection.items + ctx.address_version_collection.count;
                 memcpy(new_address_version_info->node_addresses, signature->node_address_offsets, sizeof(u64) * signature->node_address_offset_count);
                 memcpy(new_address_version_info->level_addresses, signature->level_address_offsets, sizeof(u64) * signature->level_address_offset_count);
@@ -1055,6 +1109,7 @@ b32 scan_memory_addresses()
                 new_address_version_info->level_count = signature->level_address_offset_count;
                 new_address_version_info->version = string_table_intern(version);
                 new_address_version_info->game = signature->game;
+                string_printf(&new_address_version_info->game_name, signature->game_name.str);
                 new_address_version_info->is_gog = signature->is_gog;
                 new_address_version_info->additional_info = signature->additional_info;
                 
@@ -1079,7 +1134,7 @@ b32 scan_memory_addresses()
                                                     "\tnode_offsets = %s\n" \
                                                     "\tlevel_offsets = %s\n" \
                                                     "}\n",
-                                                    s_game_short_names[new_address_version_info->game],
+                                                    new_address_version_info->game_name.str,
                                                     signature->is_gog ? "gog" : "steam",
                                                     new_address_version_info->version,
                                                     new_address_version_info->additional_info ? "dx11" : "vulkan",
@@ -1101,6 +1156,8 @@ b32 scan_memory_addresses()
                 }
             }
         }
+        
+        string_printf(&ctx.game_name, signature->game_name.str);
         process_signature_scanner_end();
     }
     if (node_position_address_collection.count)
@@ -1119,6 +1176,12 @@ b32 scan_memory_addresses()
             ctx.level_name_address += level_address_collection.addresses[level_address_collection.count - 1];
             memory_scan_failed = false;
         }
+    }
+    
+    if (!memory_scan_failed)
+    {
+        const char *game_name = get_game_name(ctx.game_type, version);
+        string_printf(&ctx.game_name, game_name);
     }
     
     return !memory_scan_failed;

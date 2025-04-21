@@ -27,11 +27,12 @@
 
 //  @todo:  build.bat and increment on every build
 #define APP_VERSION_MAJOR 0
-#define APP_VERSION_MINOR 1
-#define APP_VERSION_BUILD 2
+#define APP_VERSION_MINOR 2
+#define APP_VERSION_BUILD 0
 
 #define MAX_LEVELS 1024
 
+//  @todo:  remove u16 and s16
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned long u32;
@@ -103,10 +104,9 @@ const char **get_key_code_names();
 
 u64 hash_fnv1a(void *data, u64 size);
 
-//  @note:  when adding a new game, check if the title matches in get_game_type()
-//          add a short name for output for game_addresses.txt
-//          add a process name for process lookup
-//          update game enum
+//  @todo: get rid of game name and enum here and grab this info from signature info
+//         that way we no longer need to update either of these new games and it's all data driven
+//         enum Game{} -> String process_name
 static const char *s_game_short_names[] = {
     "none",
     "dos1",
@@ -270,6 +270,7 @@ struct AddressCollection
 struct AddressVersionInfo
 {
     Game game;
+    String game_name;
     b32 is_gog;
     const char *version;
     u64 node_addresses[32];
@@ -297,6 +298,8 @@ struct Signature
 struct SignatureInfo
 {
     Game game;
+    String game_name;
+    
     b32 is_gog;
     
     Signature node_signature;
@@ -466,6 +469,8 @@ struct VisualizerCtx
     String level_name;
     
     Game game_type;
+    String game_name;
+    
     // none defaults to current active game_type
     Game game_world_to_display;
     mco_coro *action_co;

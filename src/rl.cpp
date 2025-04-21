@@ -1410,6 +1410,7 @@ void do_map_window(VisualizerCtx *ctx)
                 if (region_ui_result == PointOfInterestUIResult_Export || object_ui_result == PointOfInterestUIResult_Export)
                 {
                     directory_push("data");
+                    directory_push(ctx->game_name.str);
                     directory_push(current_level_name);
                     String export_file_name;
                     if (region_ui_result == PointOfInterestUIResult_Export)
@@ -1423,6 +1424,7 @@ void do_map_window(VisualizerCtx *ctx)
                         string_printf(&export_file_name, "%s\\interests.txt", WORK_PATH.str);
                         dump_point_of_interests_to_file(export_file_name.str, current_level->objects, current_level->objects_count);
                     }
+                    directory_pop();
                     directory_pop();
                     directory_pop();
                 }

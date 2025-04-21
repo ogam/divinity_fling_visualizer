@@ -18,6 +18,7 @@ struct ProcessInfo
     u64 base_address;
     u64 module_size;
     char file_name[1024];
+    char file_path[1024];
     char version[1024];
     char name[1024];
     
@@ -275,12 +276,13 @@ b32 process_find(StringCollection *process_names)
                         CloseHandle(handle_module_snapshot);
                     }
                     
-                    GetModuleFileNameExA(handle_process, NULL, process_info.file_name, sizeof(process_info.file_name));
+                    snprintf(process_info.file_name, sizeof(process_info.file_name), pe32.szExeFile);
+                    GetModuleFileNameExA(handle_process, NULL, process_info.file_path, sizeof(process_info.file_path));
                     
                     DWORD file_info_handle;
                     DWORD file_info_output;
-                    file_info_output = GetFileVersionInfoSize(process_info.file_name, &file_info_handle);
-                    file_info_output = GetFileVersionInfo(process_info.file_name, file_info_handle, sizeof(buffer), buffer);
+                    file_info_output = GetFileVersionInfoSize(process_info.file_path, &file_info_handle);
+                    file_info_output = GetFileVersionInfo(process_info.file_path, file_info_handle, sizeof(buffer), buffer);
                     
                     u32 buffer_size;
                     VS_FIXEDFILEINFO *fixed_file_info = NULL;
