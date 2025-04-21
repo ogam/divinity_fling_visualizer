@@ -185,6 +185,8 @@ void process_info_init()
     process_info.is_dx11 = false;
     memset(process_info.version, 0, sizeof(process_info.version));
     process_info.is_gog = false;
+    memset(process_info.file_name, 0, sizeof(process_info.file_name));
+    memset(process_info.file_path, 0, sizeof(process_info.file_path));
     memset(process_info.name, 0, sizeof(process_info.name));
     process_info.process_id = 0;
     
@@ -639,6 +641,15 @@ const char *process_get_version(u32 *version_major, u32 *version_minor, u32 *ver
         *version_private = process_info.version_private;
     }
     return process_info.version;
+}
+
+const char *process_get_file_name()
+{
+    if (strlen(process_info.file_name))
+    {
+        return process_info.file_name;
+    }
+    return NULL;
 }
 
 // https://learn.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard

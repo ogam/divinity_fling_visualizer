@@ -56,5 +56,6 @@ b32 process_is_gog();
 b32 process_is_dx11();
 const char *process_get_window_title();
 const char *process_get_version(u32 *version_major, u32 *version_minor, u32 *version_build, u32 *version_private);
+const char *process_get_file_name();
 
 ClipboardImage clipboard_get_image();

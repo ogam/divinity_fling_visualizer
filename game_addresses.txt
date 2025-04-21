@@ -1,553 +1,553 @@
 hotfix 6
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.370362
 	node_offsets = 0x55CE928, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x574E9F0, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.370362
 	node_offsets = 0x5350488, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x54D0580, 0x142
-	graphics = dx11
 }
 patch_4_1
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.3905231
 	node_offsets = 0x5B01AE0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B9FBA8, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.3905231
 	node_offsets = 0x586DB00, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x590B8C8, 0x142
-	graphics = dx11
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.3905231
 	node_offsets = 0x5B13BA0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5BB2040, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.3905231
 	node_offsets = 0x587FC60, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x591DBD0, 0x142
-	graphics = dx11
 }
 hotfix_10
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.3911062
 	node_offsets = 0x5B02AC0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5BA0B88, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.3911062
 	node_offsets = 0x586DB20, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x590B8E8, 0x142
-	graphics = dx11
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.3911062
 	node_offsets = 0x5B13BC0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5BB2060, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.3911062
 	node_offsets = 0x587FC60, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x591DBF0, 0x142
-	graphics = dx11
 }
 hotfix_11
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.3956130
 	node_offsets = 0x5B02AE0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5BA0E48, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.3956130
 	node_offsets = 0x586DB60, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x590BAC8, 0x142
-	graphics = dx11
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.3956130
 	node_offsets = 0x5B13C20, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5BB1E00, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.3956130
 	node_offsets = 0x587FC60, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x591DB10, 0x142
-	graphics = dx11
 }
 hotfix_12
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4079877
 	node_offsets = 0x5A7E8C0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B1E1D8, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4079877
 	node_offsets = 0x57EF5E0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x588E6C8, 0x142
-	graphics = dx11
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4079877
 	node_offsets = 0x5A90A60, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B304E0, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4079877
 	node_offsets = 0x58017C0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x58A0BC0, 0x142
-	graphics = dx11
 }
 hotfix_13
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4145012
 	node_offsets = 0x5A7F8E0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B1F2D8, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4145012
 	node_offsets = 0x57F1640, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x58906E8, 0x142
-	graphics = dx11
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4145012
 	node_offsets = 0x5A91A80, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B31540, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4145012
 	node_offsets = 0x58037A0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x58A2B60, 0x142
-	graphics = dx11
 }
 hotfix_14
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4216792
 	node_offsets = 0x5A828E0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B222E8, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4216792
 	node_offsets = 0x57F3600, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x58927E8, 0x142
-	graphics = dx11
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4216792
 	node_offsets = 0x5A93A40, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B334E0, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4216792
 	node_offsets = 0x5804780, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x58A39E0, 0x142
-	graphics = dx11
 }
 hotfix_15
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4251417
 	node_offsets = 0x5A85900, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B25478, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4251417
 	node_offsets = 0x57F7640, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5896898, 0x142
-	graphics = dx11
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4251417
 	node_offsets = 0x5A97A80, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B375B0, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4251417
 	node_offsets = 0x5809780, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x58A8CE0, 0x142
-	graphics = dx11
 }
 hotfix_16
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4425968
 	node_offsets = 0x5A99080, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B38D08, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4425968
 	node_offsets = 0x580ADC0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x58AA268, 0x142
-	graphics = dx11
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4425968
 	node_offsets = 0x5AAA200, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5B49F10, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4425968
 	node_offsets = 0x581BF20, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x58BB4B0, 0x142
-	graphics = dx11
 }
 hotfix_17
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4494476
 	node_offsets = 0x5B04160, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5BA3D48, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4494476
 	node_offsets = 0x5875E60, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5915328, 0x142
-	graphics = dx11
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4494476
 	node_offsets = 0x5B172A0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x5BB6F10, 0x142
-	graphics = vulkan
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4494476
 	node_offsets = 0x5887FE0, 0x260, 0x38, 0x38, 0x10
 	level_offsets = 0x59275A0, 0x142
-	graphics = dx11
 }
 patch 6
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4763283
-	graphics = vulkan
 	node_offsets =  0x5B3C070, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5BDC398, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4763283
-	graphics = dx11
 	node_offsets =  0x58AED90, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x594E988, 0x183
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4763283
-	graphics = vulkan
 	node_offsets =  0x5B4E230, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5BEE6A0, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4763283
-	graphics = dx11
 	node_offsets =  0x58C0F30, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5960D20, 0x183
 }
 hotfix 18
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4788723
-	graphics = vulkan
 	node_offsets =  0x514D2E0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x530DEE0, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4788723
-	graphics = dx11
 	node_offsets =  0x4EC0AE0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5081630, 0x183
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4788723
-	graphics = vulkan
 	node_offsets =  0x51573C0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5318110, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4788723
-	graphics = dx11
 	node_offsets =  0x4EC9BE0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x508A880, 0x183
 }
 hotfix 19
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4811634
-	graphics = vulkan
 	node_offsets =  0x5B590D0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5BF93B8, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4811634
-	graphics = dx11
 	node_offsets =  0x58CBD90, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x596B968, 0x183
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4811634
-	graphics = vulkan
 	node_offsets =  0x5B6B1F0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5C0B570, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4811634
-	graphics = dx11
 	node_offsets =  0x58DDF30, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x597DA00, 0x183
 }
 hotfix 20
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4854838
-	graphics = vulkan
 	node_offsets =  0x5B55050, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5BF5328, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4854838
-	graphics = dx11
 	node_offsets =  0x58C7DD0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x59679F8, 0x183
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4854838
-	graphics = vulkan
 	node_offsets =  0x5B661B0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5C06480, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4854838
-	graphics = dx11
 	node_offsets =  0x58D8ED0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5978A20, 0x183
 }
 hotfix 21
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4890942
-	graphics = vulkan
 	node_offsets =  0x5B63070, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5C034C8, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4890942
-	graphics = dx11
 	node_offsets =  0x58D5DF0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5975BA8, 0x183
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4890942
-	graphics = vulkan
 	node_offsets =  0x5B741F0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5C14840, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4890942
-	graphics = dx11
 	node_offsets =  0x5986E10, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x58E6F50, 0x183
 }
 hotfix 21_1 minor crash fix
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4900808
-	graphics = vulkan
 	node_offsets =  0x5B63070, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5C034F8, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4900808
-	graphics = dx11
 	node_offsets =  0x58D5DF0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5975B98, 0x183
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4900808
-	graphics = vulkan
 	node_offsets =  0x5B741F0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5C14850, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4900808
-	graphics = dx11
 	node_offsets =  0x58E7F50, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5987E20, 0x183
 }
 hotfix 22
 {
+	process = bg3.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4905117
-	graphics = vulkan
 	node_offsets =  0x5B65050, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5C054C8, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = gog
 	version = 4.1.1.4905117
-	graphics = dx11
 	node_offsets =  0x58D8DB0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5978978, 0x183
 }
 {
+	process = bg3.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4905117
-	graphics = vulkan
 	node_offsets =  0x5B761F0, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5C16680, 0x183
 }
 {
+	process = bg3_dx11.exe
 	game = bg3
 	platform = steam
 	version = 4.1.1.4905117
-	graphics = dx11
 	node_offsets =  0x58E8F10, 0x260, 0x38, 0x38, 0x10
 	level_offsets =  0x5988B70, 0x183
 }
 {
+	process = EoCApp.exe
 	game = dos2
 	platform = steam
 	version = 3.1.1.061173735
-	graphics = dx11
 	node_offsets =  0x29E07A0, 0x18, 0x148, 0x18, 0x70, 0x30
 	level_offsets =  0x2980508, 0x48, 0xC0A
 }

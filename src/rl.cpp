@@ -1079,24 +1079,26 @@ void do_map_window(VisualizerCtx *ctx)
             if (ctx->world)
             {
                 StringCollection *level_names = get_level_names(ctx);
-                
-                for (s32 index = 0; index < level_names->count; ++index)
+                if (level_names)
                 {
-                    const char *level_name = (const char*)level_names->strings[index];
-                    Level *level = (Level*)hashmap_get(ctx->world, level_name);
-                    if (level)
+                    for (s32 index = 0; index < level_names->count; ++index)
                     {
-                        if (ImGui::BeginTabItem(level_name))
+                        const char *level_name = (const char*)level_names->strings[index];
+                        Level *level = (Level*)hashmap_get(ctx->world, level_name);
+                        if (level)
                         {
-                            current_level_name = level_name;
-                            current_level = level;
-                            if (current_level != ctx->previous_tab_level)
+                            if (ImGui::BeginTabItem(level_name))
                             {
-                                ctx->current_drawing_aabbf = nullptr;
+                                current_level_name = level_name;
+                                current_level = level;
+                                if (current_level != ctx->previous_tab_level)
+                                {
+                                    ctx->current_drawing_aabbf = nullptr;
+                                }
+                                ctx->current_tab_level = current_level;
+                                ctx->previous_tab_level = current_level;
+                                ImGui::EndTabItem();
                             }
-                            ctx->current_tab_level = current_level;
-                            ctx->previous_tab_level = current_level;
-                            ImGui::EndTabItem();
                         }
                     }
                 }
@@ -1831,21 +1833,36 @@ b32 do_settings_window(VisualizerCtx *ctx)
         String input_buffer;
         {
             ImGui::Text("Game World");
-            for (s32 index = 0; index < Game_Count; ++index)
+            
+            s32 selected_index = -1;
+            for (s32 index = 0; index < ctx->game_names.count; ++index)
             {
-                b32 is_active = ctx->game_world_to_display == index;
-                const char *radio_button_name = s_game_short_names[index];
-                if (index == Game_None)
+                if (strcmp(ctx->game_world_to_display.str, ctx->game_names.strings[index]) == 0)
+                {
+                    selected_index = index;
+                    break;
+                }
+            }
+            
+            for (s32 index = -1; index < ctx->game_names.count; ++index)
+            {
+                const char *radio_button_name = NULL;
+                b32 is_active = index == selected_index;
+                if (index < 0)
                 {
                     radio_button_name = "Auto";
+                }
+                else
+                {
+                    radio_button_name = ctx->game_names.strings[index];
                 }
                 
                 if (ImGui::RadioButton(radio_button_name, is_active))
                 {
-                    ctx->game_world_to_display = (Game)index;
+                    string_printf(&ctx->game_world_to_display, ctx->game_names.strings[index]);
                 }
                 
-                if (index != Game_Count - 1)
+                if (index != ctx->game_names.count - 1)
                 {
                     ImGui::SameLine();
                 }
@@ -2154,10 +2171,9 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
     }
     
     arena_clear(arena);
-    for (s32 index = 0; index < Game_Count; ++index)
+    for (s32 index = 0; index < ctx->game_names.count; ++index)
     {
-        ctx->world_infos[index].level_names.strings = (const char**)arena_alloc(arena, sizeof(const char*) * MAX_LEVELS);
-        ctx->world_infos[index].level_names.count = 0;
+        string_collection_init(&ctx->world_infos[index].level_names, MAX_LEVELS, arena);
     }
     
     CACHED_TEXTURES = hashmap_make(arena, sizeof(AppTexture), 512);
@@ -2173,7 +2189,8 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
         s32 relative_directory_length = (s32)directory_path_length;
         s32 file_name_length = (s32)strlen(file_name);
         
-        Game game_type = Game_None;
+        String game;
+        memset(&game, 0, sizeof(String));
         
         {
             const char *directory_walker = directory_path + directory_path_length;
@@ -2252,11 +2269,11 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
             
             if (parent_directory)
             {
-                for (s32 game_index = 0; game_index < Game_Count; ++game_index)
+                for (s32 game_index = 0; game_index < ctx->game_names.count; ++game_index)
                 {
-                    if (strstr(parent_directory, s_game_short_names[game_index]))
+                    if (strstr(parent_directory, ctx->game_names.strings[game_index]))
                     {
-                        game_type = (Game)game_index;
+                        string_printf(&game, ctx->game_names.strings[game_index]);
                         break;
                     }
                 }
@@ -2267,7 +2284,7 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
         if (!level)
         {
             Level new_level = {};
-            new_level.game = game_type;
+            string_copy(&new_level.game, &game);
             new_level.name = string_table_intern(relative_directory);
             new_level.regions = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
             new_level.objects = (PointOfInterest*)arena_alloc(arena, sizeof(PointOfInterest) * POI_CAPACITY);
@@ -2382,10 +2399,20 @@ b32 load_assets(Arena *arena, VisualizerCtx *ctx)
             }
         }
         
-        StringCollection *level_names = &ctx->world_infos[level->game].level_names;
-        if (level_names->count < MAX_LEVELS)
+        StringCollection *level_names = NULL;
+        
+        for (s32 world_index = 0; world_index < ctx->game_names.count; ++world_index)
         {
-            level_names->strings[level_names->count++] = level->name;
+            if (strcmp(level->game.str, ctx->game_names.strings[world_index]) == 0)
+            {
+                level_names = &ctx->world_infos[world_index].level_names;
+                break;
+            }
+        }
+        
+        if (level_names && level_names->count < MAX_LEVELS)
+        {
+            string_collection_add(level_names, level->name);
         }
     }
     
@@ -2412,7 +2439,7 @@ b32 load_default_assets(Arena *arena, VisualizerCtx *ctx)
     }
     
     arena_clear(arena);
-    for (s32 index = 0; index < Game_Count; ++index)
+    for (s32 index = 0; index < ctx->game_names.count; ++index)
     {
         ctx->world_infos[index].level_names.strings = (const char**)arena_alloc(arena, sizeof(const char*) * MAX_LEVELS);
         ctx->world_infos[index].level_names.count = 0;
@@ -2432,7 +2459,7 @@ Aabbf calculate_max_world_region(VisualizerCtx *ctx)
     StringCollection *level_names = get_level_names(ctx);
     Hashmap *world = ctx->world;
     Aabbf region = {};
-    if (world)
+    if (world && level_names)
     {
         for (s32 level_index = 0; level_index < level_names->count; ++level_index)
         {
