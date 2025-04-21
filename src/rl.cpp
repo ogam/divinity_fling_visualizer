@@ -1975,7 +1975,8 @@ b32 do_about_window(VisualizerCtx *ctx)
     string_printf(&id_buffer, "About v%d.%d.%d##about_window", APP_VERSION_MAJOR, APP_VERSION_MINOR, APP_VERSION_BUILD);
     ImGui::Begin(id_buffer.str, (bool*)&show);
     {
-        ImGui::Text("Tool used for larian games (DOS2/BG3) to find where you place your item fling positions in the world");
+        ImGui::Text("Tool used for larian games to find where you place your item fling positions in the world");
+        ImGui::Text("dos1 - definitive edition");
         ImGui::Text("dos2 - definitive edition");
         ImGui::Text("bg3 - supported after v4.1.1.3905231, this is a minor patch after patch 4");
         ImGui::Text("Created by Ogam");
