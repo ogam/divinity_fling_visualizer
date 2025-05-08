@@ -1412,7 +1412,7 @@ void do_map_window(VisualizerCtx *ctx)
                 if (region_ui_result == PointOfInterestUIResult_Export || object_ui_result == PointOfInterestUIResult_Export)
                 {
                     directory_push("data");
-                    directory_push(ctx->game_name.str);
+                    directory_push(ctx->game_world_to_display.str);
                     directory_push(current_level_name);
                     String export_file_name;
                     if (region_ui_result == PointOfInterestUIResult_Export)
