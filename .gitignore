@@ -1,6 +1,7 @@
 .*
-settings
+settings*
 temp
+build
 builds
 builds-debug
 *.zip
@@ -8,3 +9,5 @@ builds-debug
 *.rar
 *.gz
 *.4coder
+imgui.ini
+data/*
